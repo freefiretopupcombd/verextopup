@@ -226,11 +226,11 @@ export const getOrderAnalytics = unstable_cache(
 
     return {
       total: totalOrders,
-      byStatus: statusCounts.map((s) => ({
+      byStatus: statusCounts.map((s: any) => ({
         status: s.status,
         count: s._count,
       })),
-      byPaymentStatus: paymentStatusCounts.map((s) => ({
+      byPaymentStatus: paymentStatusCounts.map((s: any) => ({
         status: s.paymentStatus,
         count: s._count,
       })),
@@ -263,9 +263,9 @@ export const getTopProducts = unstable_cache(
       take: 10,
     });
 
-    const productIds = topProducts
-      .map((p) => p.productId)
-      .filter((id): id is string => id !== null);
+        const productIds = topProducts
+      .map((p: any) => p.productId)
+      .filter((id: any): id is string => id !== null);
 
     if (productIds.length === 0) return [];
 
@@ -273,15 +273,15 @@ export const getTopProducts = unstable_cache(
       where: { id: { in: productIds } },
       select: { id: true, name: true, slug: true, icon: true },
     });
-    const productMap = new Map(products.map((p) => [p.id, p]));
+    const productMap = new Map(products.map((p: any) => [p.id, p]));
 
     return topProducts
-      .map((tp) => {
+      .map((tp: any) => {
         const product = tp.productId ? productMap.get(tp.productId) : null;
         return {
           productId: tp.productId,
-          productName: product?.name || "Unknown",
-          productIcon: product?.icon,
+          productName: (product as any)?.name || "Unknown",
+          productIcon: (product as any)?.icon,
           productSlug: product?.slug,
           revenue: Number(tp._sum.totalPrice || 0),
           quantity: Number(tp._sum.quantity || 0),
@@ -347,8 +347,8 @@ export const getUserAnalytics = unstable_cache(
     ]);
 
     const userIds = topSpenders
-      .map((s) => s.userId)
-      .filter((id): id is string => id !== null);
+      .map((s: any) => s.userId)
+      .filter((id: any): id is string => id !== null);
 
     const users = userIds.length
       ? await prisma.user.findMany({
@@ -356,18 +356,18 @@ export const getUserAnalytics = unstable_cache(
           select: { id: true, name: true, email: true, image: true },
         })
       : [];
-    const userMap = new Map(users.map((u) => [u.id, u]));
+    const userMap = new Map(users.map((u: any) => [u.id, u]));
 
     return {
       totalUsers,
       newUsers: newUsersInRange,
       activeLastWeek,
       activeLastMonth,
-      growthChart: userGrowth.map((g) => ({
+      growthChart: userGrowth.map((g: any) => ({
         date: new Date(g.day).toISOString().slice(0, 10),
         count: g.count,
       })),
-      topSpenders: topSpenders.map((s) => {
+      topSpenders: topSpenders.map((s: any) => {
         const user = s.userId ? userMap.get(s.userId) : null;
         return {
           userId: s.userId,
@@ -463,12 +463,12 @@ export const getWalletAnalytics = unstable_cache(
         amount: Number(pendingTopUps._sum.amount || 0),
         count: pendingTopUps._count,
       },
-      reasonBreakdown: reasonBreakdown.map((r) => ({
+      reasonBreakdown: reasonBreakdown.map((r: any) => ({
         reason: r.reason,
         amount: Number(r._sum.amount || 0),
         count: r._count,
       })),
-      dailyChart: dailyChart.map((d) => ({
+      dailyChart: dailyChart.map((d: any) => ({
         date: new Date(d.day).toISOString().slice(0, 10),
         credits: Number(d.credits),
         debits: Number(d.debits),
@@ -509,11 +509,11 @@ export const getProductAnalytics = unstable_cache(
 
     return {
       total: totalProducts,
-      byStatus: byStatus.map((s) => ({
+      byStatus: byStatus.map((s: any) => ({
         status: s.status,
         count: s._count,
       })),
-      categories: categories.map((c) => ({
+      categories: categories.map((c: any) => ({
         id: c.id,
         name: c.name,
         productCount: c._count.products,
@@ -556,8 +556,8 @@ export const getReviewAnalytics = unstable_cache(
     return {
       total: totalReviews,
       average: Number(avgRating._avg.rating || 0),
-      byStatus: byStatus.map((s) => ({ status: s.status, count: s._count })),
-      byRating: ratingDist.map((r) => ({ rating: r.rating, count: r._count })),
+      byStatus: byStatus.map((s: any) => ({ status: s.status, count: s._count })),
+      byRating: ratingDist.map((r: any) => ({ rating: r.rating, count: r._count })),
     };
   },
   ["analytics-reviews"],
@@ -594,8 +594,8 @@ export const getSupportAnalytics = unstable_cache(
 
     return {
       totalTickets,
-      byStatus: byStatus.map((s) => ({ status: s.status, count: s._count })),
-      byCategory: byCategory.map((c) => ({
+      byStatus: byStatus.map((s: any) => ({ status: s.status, count: s._count })),
+      byCategory: byCategory.map((c: any) => ({
         category: c.category,
         count: c._count,
       })),

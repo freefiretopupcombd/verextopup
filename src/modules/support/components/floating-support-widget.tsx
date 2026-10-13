@@ -17,7 +17,7 @@ export function FloatingSupportWidget({
   config,
   isLoggedIn,
 }: {
-  config: SupportWidgetConfig;
+  config: any;
   isLoggedIn: boolean;
 }) {
   const [open, setOpen] = useState(false);

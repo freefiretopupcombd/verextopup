@@ -135,7 +135,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     take: 5000,
   });
 
-  const blogPages: MetadataRoute.Sitemap = blogPosts.map((post) => ({
+  const blogPages: MetadataRoute.Sitemap = blogPosts.map((post: { slug: string; updatedAt: Date }) => ({
     url: `${baseUrl}/blog/${post.slug}`,
     lastModified: post.updatedAt,
     changeFrequency: "monthly",
@@ -155,7 +155,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
 
   const blogCategoryPages: MetadataRoute.Sitemap = blogCategories.map(
-    (cat) => ({
+    (cat: { slug: string; updatedAt: Date }) => ({
       url: `${baseUrl}/blog/category/${cat.slug}`,
       lastModified: cat.updatedAt,
       changeFrequency: "weekly",

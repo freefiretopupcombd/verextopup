@@ -81,7 +81,8 @@ export default async function SupportPage() {
 
         {/* FAQ Categories */}
         <section>
-          <FaqCategories />
+          <FaqCategories isLoggedIn={isLoggedIn} />
+
         </section>
 
         {/* Popular FAQs */}

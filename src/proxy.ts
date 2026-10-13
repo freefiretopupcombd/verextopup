@@ -21,8 +21,8 @@ const AUTH_ROUTES = [
 const PROTECTED_ROUTES = [
   "/account",
   "/checkout",
-  "/order",   // Order details
-  "/pay",     // Payment page
+  "/order",
+  "/pay",
 ];
 
 // Admin routes
@@ -54,29 +54,21 @@ export default auth((req) => {
   // API ROUTES
   // ==================================================
   if (pathname.startsWith("/api")) {
-    // ---- Admin API protection ----
     if (ADMIN_API_ROUTES.some((r) => pathname.startsWith(r))) {
       if (!isLoggedIn) {
-        return NextResponse.json(
-          { error: "Unauthorized" },
-          { status: 401 }
-        );
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
       if (!isAdmin) {
-        return NextResponse.json(
-          { error: "Forbidden" },
-          { status: 403 }
-        );
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
     }
     return NextResponse.next();
   }
 
   // ==================================================
-  // AUTH ROUTES (login, register, etc.)
+  // AUTH ROUTES
   // ==================================================
   if (AUTH_ROUTES.some((r) => pathname.startsWith(r))) {
-    // Already logged in → redirect away
     if (isLoggedIn) {
       return NextResponse.redirect(
         new URL(isAdmin ? "/admin" : "/account", nextUrl)
@@ -91,14 +83,10 @@ export default auth((req) => {
   if (ADMIN_ROUTES.some((r) => pathname.startsWith(r))) {
     if (!isLoggedIn) {
       return NextResponse.redirect(
-        new URL(
-          `/login?callbackUrl=${encodeURIComponent(pathname)}`,
-          nextUrl
-        )
+        new URL(`/login?callbackUrl=${encodeURIComponent(pathname)}`, nextUrl)
       );
     }
     if (!isAdmin) {
-      // Logged in but not admin
       return NextResponse.redirect(new URL("/account", nextUrl));
     }
     return NextResponse.next();
@@ -110,10 +98,7 @@ export default auth((req) => {
   if (PROTECTED_ROUTES.some((r) => pathname.startsWith(r))) {
     if (!isLoggedIn) {
       return NextResponse.redirect(
-        new URL(
-          `/login?callbackUrl=${encodeURIComponent(pathname)}`,
-          nextUrl
-        )
+        new URL(`/login?callbackUrl=${encodeURIComponent(pathname)}`, nextUrl)
       );
     }
     return NextResponse.next();
@@ -123,17 +108,10 @@ export default auth((req) => {
 });
 
 // ==================================================
-// MIDDLEWARE MATCHER
+// PROXY MATCHER
 // ==================================================
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, robots.txt, sitemap.xml
-     * - public assets
-     */
     "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|css|js|woff|woff2|ttf|otf|map)$).*)",
   ],
 };

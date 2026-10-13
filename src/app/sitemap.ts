@@ -2,7 +2,6 @@ import type { MetadataRoute } from "next";
 
 import { prisma } from "@/lib/prisma";
 import { getSeoSettings } from "@/modules/seo/queries";
-import { absoluteUrl } from "@/modules/seo/defaults";
 
 // ==================================================
 // DYNAMIC SITEMAP
@@ -22,15 +21,10 @@ import { absoluteUrl } from "@/modules/seo/defaults";
 //   - /account/*, /checkout, /cart
 //   - /admin/*, /api/*
 //   - Any page with isIndexable = false
-//
-// Regenerated on every request in dev; cached in prod.
-// For very large catalogs (>50k URLs), split into
-// sitemap-index + multiple sitemaps (future enhancement).
 // ==================================================
 
-const SITEMAP_REVALIDATE_SECONDS = 3600; // 1 hour
-
-export const revalidate = SITEMAP_REVALIDATE_SECONDS;
+// ⚠️ Next.js 16 requires LITERAL value for `revalidate`
+export const revalidate = 3600; // 1 hour
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const settings = await getSeoSettings();
@@ -135,12 +129,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     take: 5000,
   });
 
-  const blogPages: MetadataRoute.Sitemap = blogPosts.map((post: { slug: string; updatedAt: Date }) => ({
-    url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: post.updatedAt,
-    changeFrequency: "monthly",
-    priority: 0.7,
-  }));
+  const blogPages: MetadataRoute.Sitemap = blogPosts.map(
+    (post: { slug: string; updatedAt: Date }) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: post.updatedAt,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    })
+  );
 
   // ============================================
   // 5. Dynamic — Blog categories

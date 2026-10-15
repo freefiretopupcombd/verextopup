@@ -18,6 +18,8 @@ import { getPWAConfig } from "@/modules/pwa/settings";
 
 import "./globals.css";
 
+export const revalidate = 3600; // 1 hour (শুধু static parts)
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",

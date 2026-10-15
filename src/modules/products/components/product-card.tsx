@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { BadgeCheck } from "lucide-react";
 
 import { DualPrice } from "@/modules/currency/components/dual-price";
@@ -21,7 +22,13 @@ export type ProductCardData = {
   variantCount: number;
 };
 
-export function ProductCard({ product }: { product: ProductCardData }) {
+export function ProductCard({
+  product,
+  priority = false,
+}: {
+  product: ProductCardData;
+  priority?: boolean;
+}) {
   const price = product.firstVariant
     ? (product.firstVariant.salePrice ?? product.firstVariant.price)
     : 0;
@@ -42,10 +49,14 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           </div>
 
           {product.thumbnail ? (
-            <img
+            <Image
               src={product.thumbnail}
               alt={product.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 250px"
+              className="object-cover group-hover:scale-105 transition duration-300"
+              priority={priority}
+              quality={80}
             />
           ) : product.icon ? (
             <div className="text-5xl sm:text-6xl">{product.icon}</div>

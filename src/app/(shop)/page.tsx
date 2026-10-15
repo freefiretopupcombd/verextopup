@@ -16,6 +16,10 @@ import { BlogSection } from "@/modules/shop/components/home/blog-section";
 
 // ==================================================
 // METADATA
+
+export const revalidate = 300; // 5 min cache
+
+
 // ==================================================
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSeoSettings();

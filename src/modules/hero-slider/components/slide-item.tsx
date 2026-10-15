@@ -3,6 +3,7 @@
 import Link from "next/link";
 import * as Icons from "lucide-react";
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 import type { HeroSlidePublic } from "../queries";
 
@@ -36,6 +37,10 @@ export function SlideItem({
   const btn2Target = slide.openInNewTab ? "_blank" : undefined;
   const btn2Rel = slide.openInNewTab ? "noopener noreferrer" : undefined;
 
+  // Use mobile image on small screens, desktop on large
+  const imageSrc = slide.image;
+  const imageSrcMobile = slide.imageMobile || slide.image;
+
   return (
     <article
       className={`absolute inset-0 transition-opacity duration-1000 ease-out ${
@@ -44,15 +49,34 @@ export function SlideItem({
       aria-hidden={!isActive}
       aria-roledescription="slide"
     >
-            {/* Background Image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url(${slide.imageMobile || slide.image})`,
-        }}
-        role="img"
-        aria-label={slide.title}
-      />
+      {/* ============================================
+          Background Image — Optimized with Next/Image
+      ============================================ */}
+      {/* Mobile image (hidden on lg+) */}
+      <div className="absolute inset-0 lg:hidden">
+        <Image
+          src={imageSrcMobile}
+          alt={slide.title}
+          fill
+          sizes="100vw"
+          className="object-cover object-center"
+          priority={priority}
+          quality={75}
+        />
+      </div>
+
+      {/* Desktop image (hidden below lg) */}
+      <div className="absolute inset-0 hidden lg:block">
+        <Image
+          src={imageSrc}
+          alt={slide.title}
+          fill
+          sizes="100vw"
+          className="object-cover object-center"
+          priority={priority}
+          quality={80}
+        />
+      </div>
 
       {/* Base overlay */}
       <div

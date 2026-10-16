@@ -3,14 +3,40 @@ import { z } from "zod";
 // ==================================================
 // XSS PREVENTION HELPER
 // ==================================================
-// Strips HTML tags and dangerous characters from user input.
-// Defense-in-depth: even if rendered as raw HTML, no script runs.
-// ==================================================
 function sanitizeText(input: string): string {
   return input
-    .replace(/<[^>]*>/g, "") // strip HTML tags
-    .replace(/[<>]/g, "") // strip remaining angle brackets
+    .replace(/<[^>]*>/g, "")
+    .replace(/[<>]/g, "")
     .trim();
+}
+
+// ==================================================
+// IMAGE URL VALIDATION
+// ==================================================
+// Accepts:
+//   ✅ Standard URLs: https://example.com/image.jpg
+//   ✅ URLs with extension in path: https://example.com/image.png?w=800
+//   ✅ Cloudinary URLs (may not have extension): https://res.cloudinary.com/xxx/image/upload/f_auto,q_auto/slider1
+//   ✅ Imgur URLs: https://i.imgur.com/xxxxx.jpg
+// ==================================================
+function isValidImageUrl(url: string): boolean {
+  if (!url) return true;
+
+  // Must be a valid URL
+  try {
+    new URL(url);
+  } catch {
+    return false;
+  }
+
+  // Allow Cloudinary URLs (no extension needed — Cloudinary detects)
+  if (url.includes("cloudinary.com")) return true;
+
+  // Allow URLs with standard image extensions
+  if (/\.(jpe?g|png|webp|avif|gif|svg)(\?.*)?$/i.test(url)) return true;
+
+  // Reject others
+  return false;
 }
 
 // ==================================================
@@ -77,30 +103,24 @@ export const heroSlideSchema = z
 
     badgeIcon: z.enum(BADGE_ICONS).optional().or(z.literal("")),
 
-    // ---- Visual ----
+    // ---- Visual (Image URLs) ----
     image: z
       .string()
       .url("সঠিক image URL দিন")
       .max(500, "URL সর্বোচ্চ ৫০০ character")
-      .refine(
-        (val) => {
-          if (!val) return true;
-          return /\.(jpe?g|png|webp|avif|gif)(\?.*)?$/i.test(val);
-        },
-        { message: "Image অবশ্যই jpg, png, webp, avif বা gif হতে হবে" }
-      ),
+      .refine(isValidImageUrl, {
+        message:
+          "Image URL অবশ্যই jpg, png, webp, avif, gif হতে হবে অথবা Cloudinary URL হতে হবে",
+      }),
 
     imageMobile: z
       .string()
       .url("সঠিক mobile image URL দিন")
       .max(500)
-      .refine(
-        (val) => {
-          if (!val) return true;
-          return /\.(jpe?g|png|webp|avif|gif)(\?.*)?$/i.test(val);
-        },
-        { message: "Mobile image অবশ্যই jpg, png, webp, avif বা gif হতে হবে" }
-      )
+      .refine(isValidImageUrl, {
+        message:
+          "Mobile image URL অবশ্যই jpg, png, webp, avif, gif হতে হবে অথবা Cloudinary URL হতে হবে",
+      })
       .optional()
       .or(z.literal("")),
 
@@ -207,7 +227,6 @@ export const heroSlideSchema = z
   })
   .refine(
     (data) => {
-      // End date must be after start date
       if (!data.startAt || !data.endAt) return true;
       return new Date(data.endAt) > new Date(data.startAt);
     },
@@ -218,10 +237,7 @@ export const heroSlideSchema = z
   )
   .refine(
     (data) => {
-      // If button text given, URL must be given
-      if (data.button1Text && !data.button1Url) {
-        return false;
-      }
+      if (data.button1Text && !data.button1Url) return false;
       return true;
     },
     {
@@ -231,9 +247,7 @@ export const heroSlideSchema = z
   )
   .refine(
     (data) => {
-      if (data.button2Text && !data.button2Url) {
-        return false;
-      }
+      if (data.button2Text && !data.button2Url) return false;
       return true;
     },
     {

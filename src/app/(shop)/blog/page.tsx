@@ -6,7 +6,7 @@ import {
   listPublishedPosts,
   listBlogCategories,
 } from "@/modules/blog/queries";
-
+export const revalidate = 600;
 export const metadata: Metadata = {
   title: "Blog — VerexTopUp",
   description: "গেমিং tips, guides, tutorials এবং updates",

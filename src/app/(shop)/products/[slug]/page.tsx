@@ -14,6 +14,7 @@ import { ProductJsonLd } from "@/modules/seo/components/product-json-ld";
 import { Breadcrumbs } from "@/modules/seo/components/breadcrumbs";
 import { isUddoktaPayEnabled } from "@/modules/payments/gateways/uddoktapay-config";
 
+export const revalidate = 600; // 10 min
 // ==================================================
 // SITE CONFIG
 // ==================================================

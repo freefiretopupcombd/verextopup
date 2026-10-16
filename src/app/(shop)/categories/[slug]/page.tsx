@@ -11,7 +11,7 @@ import { ProductGrid } from "@/modules/products/components/product-grid";
 import { SortDropdown } from "@/modules/products/components/sort-dropdown";
 import { Pagination } from "@/modules/products/components/pagination";
 import { EmptyState } from "@/modules/products/components/empty-state";
-
+export const revalidate = 300;
 // ==================================================
 // DYNAMIC METADATA
 // ==================================================

@@ -6,16 +6,6 @@ import type { HeroSlidePublic } from "../queries";
 import { SlideItem } from "./slide-item";
 import { SliderArrows, SliderDots } from "./slider-controls";
 
-// ==================================================
-// HERO SLIDER — Container Bounded
-// ==================================================
-// Design decisions:
-//   - Wrapped in max-w-7xl container (not full-width)
-//   - Rounded corners + border (like a card)
-//   - Responsive heights: mobile compact, desktop cinematic
-//   - Margin from top/bottom for breathing room
-// ==================================================
-
 const AUTO_PLAY_INTERVAL = 6000;
 
 export function HeroSlider({ slides }: { slides: HeroSlidePublic[] }) {
@@ -29,9 +19,6 @@ export function HeroSlider({ slides }: { slides: HeroSlidePublic[] }) {
 
   const totalSlides = slides.length;
 
-  // ============================================
-  // Navigation
-  // ============================================
   const goToSlide = useCallback(
     (index: number) => {
       if (totalSlides === 0) return;
@@ -49,9 +36,6 @@ export function HeroSlider({ slides }: { slides: HeroSlidePublic[] }) {
     goToSlide(currentIndex - 1);
   }, [currentIndex, goToSlide]);
 
-  // ============================================
-  // Auto-play
-  // ============================================
   useEffect(() => {
     if (totalSlides <= 1) return;
     if (isPaused) return;
@@ -72,9 +56,6 @@ export function HeroSlider({ slides }: { slides: HeroSlidePublic[] }) {
     };
   }, [totalSlides, isPaused, goNext]);
 
-  // ============================================
-  // Keyboard navigation
-  // ============================================
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -93,9 +74,6 @@ export function HeroSlider({ slides }: { slides: HeroSlidePublic[] }) {
     return () => container.removeEventListener("keydown", handleKeyDown);
   }, [goNext, goPrev]);
 
-  // ============================================
-  // Touch handlers
-  // ============================================
   const MIN_SWIPE_DISTANCE = 50;
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -121,16 +99,10 @@ export function HeroSlider({ slides }: { slides: HeroSlidePublic[] }) {
     }
   };
 
-  // ============================================
-  // Empty state
-  // ============================================
   if (totalSlides === 0) {
     return null;
   }
 
-  // ============================================
-  // Render
-  // ============================================
   return (
     <section
       className="max-w-7xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6 pb-2 sm:pb-4"
@@ -138,7 +110,8 @@ export function HeroSlider({ slides }: { slides: HeroSlidePublic[] }) {
     >
       <div
         ref={containerRef}
-        className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-border shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 h-[220px] sm:h-[320px] md:h-[380px] lg:h-[440px] xl:h-[480px]"
+        // ✅ মোবাইলে হাইট কমিয়ে 180px করা হলো, ডেস্কটপে আগের মতোই আছে
+        className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-border shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 h-[180px] sm:h-[280px] md:h-[340px] lg:h-[400px] xl:h-[450px]"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         onFocus={() => setIsPaused(true)}
@@ -150,7 +123,6 @@ export function HeroSlider({ slides }: { slides: HeroSlidePublic[] }) {
         aria-roledescription="carousel"
         tabIndex={0}
       >
-        {/* Slides */}
         <div className="absolute inset-0">
           {slides.map((slide, idx) => (
             <SlideItem
@@ -162,12 +134,10 @@ export function HeroSlider({ slides }: { slides: HeroSlidePublic[] }) {
           ))}
         </div>
 
-        {/* Screen reader announcement */}
         <div className="sr-only" aria-live="polite" aria-atomic="true">
-          Slide {currentIndex + 1} of {totalSlides}: {slides[currentIndex].title}
+          Slide {currentIndex + 1} of {totalSlides}
         </div>
 
-        {/* Arrows — only show on multi-slide */}
         {totalSlides > 1 && (
           <SliderArrows
             onPrev={goPrev}
@@ -177,7 +147,6 @@ export function HeroSlider({ slides }: { slides: HeroSlidePublic[] }) {
           />
         )}
 
-        {/* Dots — only show on multi-slide */}
         {totalSlides > 1 && (
           <SliderDots
             currentIndex={currentIndex}

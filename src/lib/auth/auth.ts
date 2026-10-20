@@ -11,15 +11,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma),
   providers: [
-    // Google from authConfig
     ...authConfig.providers,
-    // Credentials (email/password)
     Credentials({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        console.log("[AUTH] 🔵 authorize() called");
+
         const parsed = z
           .object({
             email: z.string().email(),
@@ -27,7 +27,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           })
           .safeParse(credentials);
 
-        if (!parsed.success) return null;
+        if (!parsed.success) {
+          console.log("[AUTH] ❌ Invalid credentials format");
+          return null;
+        }
 
         const { email, password } = parsed.data;
 
@@ -35,10 +38,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { email: email.toLowerCase() },
         });
 
-        if (!user || !user.passwordHash) return null;
-        if (user.status !== "ACTIVE") return null;
+        console.log("[AUTH] 🔍 User lookup:", {
+          email,
+          found: !!user,
+          hasPassword: !!user?.passwordHash,
+          status: user?.status,
+          role: user?.role,
+        });
+
+        if (!user) {
+          console.log("[AUTH] ❌ User not found");
+          return null;
+        }
+
+        if (!user.passwordHash) {
+          console.log("[AUTH] ❌ No password hash");
+          return null;
+        }
+
+        if (user.status !== "ACTIVE") {
+          console.log("[AUTH] ❌ User status:", user.status);
+          return null;
+        }
 
         const isValid = await bcrypt.compare(password, user.passwordHash);
+        console.log("[AUTH] 🔐 Password valid:", isValid);
+
         if (!isValid) return null;
 
         await prisma.user.update({
@@ -46,6 +71,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           data: { lastLoginAt: new Date() },
         });
 
+        console.log("[AUTH] ✅ authorize() success");
         return {
           id: user.id,
           email: user.email,
@@ -59,13 +85,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     ...authConfig.callbacks,
     async signIn({ user, account, profile }) {
-      // Google sign-in — check if user exists and is active
       if (account?.provider === "google") {
         const existingUser = await prisma.user.findUnique({
           where: { email: user.email! },
         });
 
-        // If user exists but is suspended/banned
         if (existingUser && existingUser.status !== "ACTIVE") {
           return false;
         }
@@ -75,7 +99,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   events: {
     async createUser({ user }) {
-      // When Google creates a new user, create a wallet
       if (user.id) {
         const existingWallet = await prisma.wallet.findUnique({
           where: { userId: user.id },

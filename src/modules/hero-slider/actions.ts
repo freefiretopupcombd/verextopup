@@ -22,7 +22,7 @@ export type HeroActionState = {
 };
 
 // ==================================================
-// PARSE FORM DATA
+// PARSE FORM DATA (SIMPLIFIED)
 // ==================================================
 function parseFormData(formData: FormData) {
   const getString = (key: string) => {
@@ -43,73 +43,55 @@ function parseFormData(formData: FormData) {
   };
 
   return {
-    // Content
-    title: getString("title"),
-    subtitle: getString("subtitle"),
-    description: getString("description"),
-    badgeText: getString("badgeText"),
-    badgeIcon: getString("badgeIcon"),
-
-    // Visual
     image: getString("image"),
     imageMobile: getString("imageMobile"),
-
-    // CTA 1
-    button1Text: getString("button1Text"),
-    button1Url: getString("button1Url"),
-    button1Icon: getString("button1Icon"),
-    button1Style: getString("button1Style") || "primary",
-
-    // CTA 2
-    button2Text: getString("button2Text"),
-    button2Url: getString("button2Url"),
-    button2Icon: getString("button2Icon"),
-
-    // Colors
-    overlayColor: getString("overlayColor") || "#000000",
-    overlayOpacity: getNum("overlayOpacity", 60),
-    textColor: getString("textColor") || "#FFFFFF",
-    accentColor: getString("accentColor") || "#7C3AED",
-
-    // Behavior
     isActive: getBool("isActive"),
     sortOrder: getNum("sortOrder", 0),
-    openInNewTab: getBool("openInNewTab"),
-
-    // Scheduling
-    startAt: getString("startAt"),
-    endAt: getString("endAt"),
   };
 }
 
 // ==================================================
-// BUILD DB DATA
+// BUILD DB DATA (SIMPLIFIED)
+// ==================================================
+// যেহেতু আমরা আর টেক্সট ফিল্ড ইউজ করছি না, তাই 
+// ডাটাবেজের পুরনো ফিল্ডগুলোতে ডিফল্ট/null ভ্যালু পাঠাতে হবে।
 // ==================================================
 function buildDbData(data: z.infer<typeof heroSlideSchema>) {
   return {
-    title: data.title,
-    subtitle: data.subtitle || null,
-    description: data.description || null,
-    badgeText: data.badgeText || null,
-    badgeIcon: data.badgeIcon || null,
+    // Content (dummy values)
+    title: "Slider Banner",
+    subtitle: null,
+    description: null,
+    badgeText: null,
+    badgeIcon: null,
+    
+    // Image (main)
     image: data.image,
     imageMobile: data.imageMobile || null,
-    button1Text: data.button1Text || null,
-    button1Url: data.button1Url || null,
-    button1Icon: data.button1Icon || null,
-    button1Style: data.button1Style,
-    button2Text: data.button2Text || null,
-    button2Url: data.button2Url || null,
-    button2Icon: data.button2Icon || null,
-    overlayColor: data.overlayColor,
-    overlayOpacity: data.overlayOpacity,
-    textColor: data.textColor,
-    accentColor: data.accentColor,
+    
+    // CTA (dummy values)
+    button1Text: null,
+    button1Url: null,
+    button1Icon: null,
+    button1Style: "primary",
+    button2Text: null,
+    button2Url: null,
+    button2Icon: null,
+    
+    // Colors (dummy values)
+    overlayColor: "#000000",
+    overlayOpacity: 0, // কোনো ওভারলে থাকবে না
+    textColor: "#FFFFFF",
+    accentColor: "#7C3AED",
+    
+    // Behavior
     isActive: data.isActive,
     sortOrder: data.sortOrder,
-    openInNewTab: data.openInNewTab,
-    startAt: data.startAt ? new Date(data.startAt) : null,
-    endAt: data.endAt ? new Date(data.endAt) : null,
+    openInNewTab: false,
+    
+    // Scheduling (removed for simplicity)
+    startAt: null,
+    endAt: null,
   };
 }
 
@@ -330,7 +312,6 @@ export async function reorderHeroSlidesAction(
     return { success: false, message: "Unauthorized" };
   }
 
-  // ---- VALIDATE INPUT ----
   if (!Array.isArray(orderedIds) || orderedIds.length === 0) {
     return { success: false, message: "Invalid input" };
   }
@@ -339,7 +320,6 @@ export async function reorderHeroSlidesAction(
     return { success: false, message: "অনেক বেশি slide" };
   }
 
-  // ---- VERIFY ALL IDS EXIST ----
   const existing = await prisma.heroSlide.findMany({
     where: { id: { in: orderedIds } },
     select: { id: true },
@@ -349,7 +329,6 @@ export async function reorderHeroSlidesAction(
     return { success: false, message: "কিছু slide পাওয়া যায়নি" };
   }
 
-  // ---- UPDATE SORT ORDER ----
   try {
     await prisma.$transaction(
       orderedIds.map((id, index) =>
@@ -372,9 +351,6 @@ export async function reorderHeroSlidesAction(
 
 // ==================================================
 // INCREMENT VIEW COUNT
-// ==================================================
-// Called from client when slide renders
-// No auth needed (public analytics)
 // ==================================================
 export async function incrementSlideViewCountAction(
   slideId: string

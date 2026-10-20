@@ -161,9 +161,7 @@ export function PaymentView({
         <h1 className="text-xl sm:text-2xl font-bold text-text-primary">
           Complete Your Payment
         </h1>
-        <p className="text-sm text-text-muted mt-1">
-          Payment সম্পন্ন করে নিচের তথ্য দিন
-        </p>
+        
       </div>
 
       {/* Product Summary */}

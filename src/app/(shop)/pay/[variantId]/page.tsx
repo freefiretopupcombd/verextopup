@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ChevronRight } from "lucide-react";
 
 import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/prisma";
@@ -14,6 +12,7 @@ export const metadata: Metadata = {
     follow: false, // সম্পূর্ণ private
   },
 };
+
 export default async function PaymentPage({
   params,
   searchParams,
@@ -94,22 +93,6 @@ export default async function PaymentPage({
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-      {/* Breadcrumb */}
-      <nav className="text-xs text-text-muted mb-4 flex items-center gap-1.5 flex-wrap">
-        <Link href="/" className="hover:text-primary transition">
-          Home
-        </Link>
-        <ChevronRight className="w-3 h-3" />
-        <Link
-          href={`/products/${variant.product.slug}`}
-          className="hover:text-primary transition"
-        >
-          {variant.product.name}
-        </Link>
-        <ChevronRight className="w-3 h-3" />
-        <span className="text-text-secondary">Payment</span>
-      </nav>
-
       <PaymentView
         variant={{
           id: variant.id,

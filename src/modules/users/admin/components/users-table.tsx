@@ -11,10 +11,12 @@ import {
   Send,
   Wallet,
   CheckCircle2,
+  Settings2,  // ✅ Adjust বাটনের জন্য
 } from "lucide-react";
 import { ChangeRoleModal } from "./change-role-modal";
 import { ChangeStatusModal } from "./change-status-modal";
 import { SendNotificationModal } from "./send-notification-modal";
+import { AdjustBalanceModal } from "@/modules/wallet/admin/components/adjust-balance-modal";
 
 type User = {
   id: string;
@@ -42,9 +44,11 @@ type User = {
 export function UsersTable({
   users,
   isSuperAdmin,
+  currentUserId,
 }: {
   users: User[];
   isSuperAdmin: boolean;
+  currentUserId?: string;
 }) {
   const [openMenu, setOpenMenu] = useState<{
     id: string;
@@ -53,6 +57,7 @@ export function UsersTable({
   const [roleModal, setRoleModal] = useState<User | null>(null);
   const [statusModal, setStatusModal] = useState<User | null>(null);
   const [notifModal, setNotifModal] = useState<User | null>(null);
+  const [adjustModal, setAdjustModal] = useState<User | null>(null);
 
   const closeMenu = useCallback(() => setOpenMenu(null), []);
 
@@ -96,6 +101,7 @@ export function UsersTable({
                 const menuOpen = openMenu?.id === u.id;
                 const isBanned = u.status === "BANNED";
                 const isFrozen = u.wallet?.status === "FROZEN";
+                const isSelf = currentUserId === u.id;
 
                 return (
                   <tr key={u.id} className="hover:bg-bg-secondary/40 transition">
@@ -108,8 +114,13 @@ export function UsersTable({
                           {(u.name || u.email).charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <div className="font-medium text-text-primary truncate group-hover:text-primary transition">
+                          <div className="font-medium text-text-primary truncate group-hover:text-primary transition flex items-center gap-2">
                             {u.name || "—"}
+                            {isSelf && (
+                              <span className="text-[9px] uppercase bg-primary/15 text-primary px-1.5 py-0.5 rounded">
+                                You
+                              </span>
+                            )}
                           </div>
                           <div className="text-[11px] text-text-muted truncate">
                             {u.email}
@@ -193,12 +204,18 @@ export function UsersTable({
         </div>
       </div>
 
+      {/* Dropdown menu */}
       {openMenu && (
         <UserActionsDropdown
           user={users.find((u) => u.id === openMenu.id)!}
           anchorRect={openMenu.rect}
           isSuperAdmin={isSuperAdmin}
+          isSelf={currentUserId === openMenu.id}
           onClose={closeMenu}
+          onOpenAdjust={(u) => {
+            setAdjustModal(u);
+            closeMenu();
+          }}
           onOpenRole={(u) => {
             setRoleModal(u);
             closeMenu();
@@ -215,7 +232,11 @@ export function UsersTable({
       )}
 
       {roleModal && (
-        <ChangeRoleModal user={roleModal} onClose={() => setRoleModal(null)} />
+        <ChangeRoleModal
+          user={roleModal}
+          currentUserId={currentUserId}
+          onClose={() => setRoleModal(null)}
+        />
       )}
       {statusModal && (
         <ChangeStatusModal
@@ -229,6 +250,16 @@ export function UsersTable({
           onClose={() => setNotifModal(null)}
         />
       )}
+      {adjustModal && (
+        <AdjustBalanceModal
+          wallet={{
+            userId: adjustModal.id,
+            balance: adjustModal.wallet?.balance || 0,
+            user: { email: adjustModal.email, name: adjustModal.name },
+          }}
+          onClose={() => setAdjustModal(null)}
+        />
+      )}
     </>
   );
 }
@@ -240,7 +271,9 @@ function UserActionsDropdown({
   user,
   anchorRect,
   isSuperAdmin,
+  isSelf,
   onClose,
+  onOpenAdjust,
   onOpenRole,
   onOpenStatus,
   onOpenNotif,
@@ -248,7 +281,9 @@ function UserActionsDropdown({
   user: User;
   anchorRect: DOMRect;
   isSuperAdmin: boolean;
+  isSelf: boolean;
   onClose: () => void;
+  onOpenAdjust: (u: User) => void;
   onOpenRole: (u: User) => void;
   onOpenStatus: (u: User) => void;
   onOpenNotif: (u: User) => void;
@@ -263,43 +298,36 @@ function UserActionsDropdown({
     setMounted(true);
   }, []);
 
-  // Position calculation — flip up if near bottom, pin to viewport edges
   useEffect(() => {
     if (!mounted) return;
 
     const menuWidth = 220;
-    const menuHeight = menuRef.current?.offsetHeight || 240;
+    const menuHeight = menuRef.current?.offsetHeight || 280;
     const viewportH = window.innerHeight;
     const viewportW = window.innerWidth;
     const gap = 6;
     const padding = 12;
 
-    // Default: below the button, right-aligned with button
     let top = anchorRect.bottom + gap;
     let left = anchorRect.right - menuWidth;
 
-    // If menu goes below viewport → flip up
     if (top + menuHeight > viewportH - padding) {
       const spaceAbove = anchorRect.top - gap;
       if (spaceAbove >= menuHeight) {
         top = anchorRect.top - menuHeight - gap;
       } else {
-        // Pin to bottom edge of viewport
         top = Math.max(padding, viewportH - menuHeight - padding);
       }
     }
 
-    // If menu goes right beyond viewport → shift left
     if (left + menuWidth > viewportW - padding) {
       left = viewportW - menuWidth - padding;
     }
 
-    // If menu goes left beyond viewport → pin to left
     if (left < padding) {
       left = padding;
     }
 
-    // If top is above viewport → pin to top
     if (top < padding) {
       top = padding;
     }
@@ -307,7 +335,6 @@ function UserActionsDropdown({
     setPosition({ top, left });
   }, [anchorRect, mounted]);
 
-  // Close on escape / outside click / scroll / resize
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -373,10 +400,24 @@ function UserActionsDropdown({
         Send Notification
       </button>
 
+      {/* ✅ Adjust Balance — SUPER_ADMIN only, not self */}
+      {isSuperAdmin && !isSelf && (
+        <>
+          <div className="h-px bg-border my-1" />
+          <button
+            type="button"
+            onClick={() => onOpenAdjust(user)}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-success hover:bg-success/10 text-left font-medium"
+          >
+            <Settings2 className="w-3.5 h-3.5" />
+            Adjust Balance
+          </button>
+        </>
+      )}
+
       {isSuperAdmin && user.role !== "SUPER_ADMIN" && (
         <>
           <div className="h-px bg-border my-1" />
-
           <button
             type="button"
             onClick={() => onOpenRole(user)}

@@ -70,6 +70,13 @@ async function logAudit(opts: {
 // ==================================================
 // CHANGE ROLE — SUPER_ADMIN only
 // ==================================================
+// Rules:
+//   ✅ Self-promote ADMIN → SUPER_ADMIN (with confirmation)
+//   ❌ Self-demote SUPER_ADMIN → ADMIN/CUSTOMER (lockout prevention)
+//   ✅ Promote other user → SUPER_ADMIN (with confirmation)
+//   ✅ Demote other SUPER_ADMIN (only if not the last one)
+//   ❌ Demote the last SUPER_ADMIN (system lockout prevention)
+// ==================================================
 export async function changeRoleAction(
   prevState: AdminActionState,
   formData: FormData
@@ -78,7 +85,10 @@ export async function changeRoleAction(
   try {
     session = await requireSuperAdminOrThrow();
   } catch {
-    return { success: false, message: "শুধু SUPER_ADMIN এই কাজ করতে পারবে" };
+    return {
+      success: false,
+      message: "শুধু SUPER_ADMIN এই কাজ করতে পারবে",
+    };
   }
 
   const adminId = (session.user as any).id as string;
@@ -98,9 +108,34 @@ export async function changeRoleAction(
   }
 
   const { userId, role, reason } = parsed.data;
+  const isSelf = userId === adminId;
 
-  if (userId === adminId) {
-    return { success: false, message: "নিজের role পরিবর্তন করতে পারবেন না" };
+  // ==================================================
+  // SELF-PROMOTION RULES
+  // ==================================================
+  if (isSelf) {
+    const currentRole = (session.user as any).role;
+
+    // ❌ Block self-demotion from SUPER_ADMIN
+    if (currentRole === "SUPER_ADMIN" && role !== "SUPER_ADMIN") {
+      return {
+        success: false,
+        message:
+          "নিজের SUPER_ADMIN role থেকে demote করা যাবে না। অন্য SUPER_ADMIN কে দিয়ে করান।",
+      };
+    }
+
+    // ✅ Self-promotion to SUPER_ADMIN — requires double confirmation
+    if (role === "SUPER_ADMIN") {
+      const confirmSuperAdmin = formData.get("confirmSuperAdmin");
+      if (confirmSuperAdmin !== "yes") {
+        return {
+          success: false,
+          message:
+            "SUPER_ADMIN বানানোর জন্য নিশ্চিতকরণ প্রয়োজন। Checkbox tick করুন।",
+        };
+      }
+    }
   }
 
   const headersList = await headers();
@@ -113,9 +148,45 @@ export async function changeRoleAction(
       select: { id: true, role: true, email: true },
     });
 
-    if (!user) return { success: false, message: "User পাওয়া যায়নি" };
+    if (!user) {
+      return { success: false, message: "User পাওয়া যায়নি" };
+    }
     if (user.role === role) {
-      return { success: false, message: "User already এই role এ আছে" };
+      return {
+        success: false,
+        message: `User already ${role} role এ আছে`,
+      };
+    }
+
+    // ==================================================
+    // PROTECT: Last SUPER_ADMIN (for any user)
+    // ==================================================
+    if (user.role === "SUPER_ADMIN" && role !== "SUPER_ADMIN") {
+      const superAdminCount = await prisma.user.count({
+        where: { role: "SUPER_ADMIN" },
+      });
+
+      if (superAdminCount <= 1) {
+        return {
+          success: false,
+          message:
+            "শেষ SUPER_ADMIN কে demote করা যাবে না। আগে অন্য কাউকে SUPER_ADMIN বানান।",
+        };
+      }
+    }
+
+    // ==================================================
+    // CONFIRM: Promotion to SUPER_ADMIN (for other users)
+    // ==================================================
+    if (role === "SUPER_ADMIN" && !isSelf) {
+      const confirmSuperAdmin = formData.get("confirmSuperAdmin");
+      if (confirmSuperAdmin !== "yes") {
+        return {
+          success: false,
+          message:
+            "SUPER_ADMIN বানানোর জন্য নিশ্চিতকরণ প্রয়োজন। Checkbox tick করুন।",
+        };
+      }
     }
 
     await prisma.$transaction(async (tx) => {
@@ -139,17 +210,19 @@ export async function changeRoleAction(
       });
     });
 
-    // Notify user
+    // Notify user (non-blocking)
     try {
       await notifyUser(
         userId,
         "ACCOUNT_UPDATED",
         "🔐 Account Role Updated",
-        `আপনার account role পরিবর্তন করা হয়েছে।`,
+        `আপনার account role পরিবর্তন করা হয়েছে: ${user.role} → ${role}`,
         "/account",
         { role }
       );
-    } catch {}
+    } catch (e) {
+      console.error("Notification failed:", e);
+    }
 
     revalidatePath("/admin/users");
     revalidatePath(`/admin/users/${userId}`);
@@ -215,7 +288,10 @@ export async function changeStatusAction(
       return { success: false, message: `User already ${status}` };
     }
     if (user.role === "SUPER_ADMIN") {
-      return { success: false, message: "SUPER_ADMIN কে ban করা যাবে না" };
+      return {
+        success: false,
+        message: "SUPER_ADMIN কে ban করা যাবে না",
+      };
     }
 
     await prisma.$transaction(async (tx) => {
@@ -252,7 +328,9 @@ export async function changeStatusAction(
         "/account",
         { status, reason }
       );
-    } catch {}
+    } catch (e) {
+      console.error("Notification failed:", e);
+    }
 
     revalidatePath("/admin/users");
     revalidatePath(`/admin/users/${userId}`);

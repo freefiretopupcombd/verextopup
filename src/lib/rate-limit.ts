@@ -1,21 +1,5 @@
 import "server-only";
 
-// ==================================================
-// RATE LIMITER
-// ==================================================
-// In-memory sliding window rate limiter.
-//
-// ⚠️ PRODUCTION NOTE:
-// In-memory works for a single server instance.
-// For multi-server / serverless, migrate to Redis (Upstash).
-//
-// Algorithm: Sliding window log
-//   - For each key, store timestamps of recent requests
-//   - On new request, filter out entries older than windowMs
-//   - If count >= limit → block
-//   - Else → allow and record timestamp
-// ==================================================
-
 type Bucket = {
   timestamps: number[];
 };
@@ -25,20 +9,17 @@ class RateLimiter {
   private cleanupInterval: NodeJS.Timeout | null = null;
 
   constructor() {
-    // Auto-cleanup every 5 minutes to prevent memory leak
     if (typeof setInterval !== "undefined") {
       this.cleanupInterval = setInterval(() => {
         this.cleanup();
       }, 5 * 60 * 1000);
 
-      // Prevent Node from hanging on shutdown
       if (this.cleanupInterval.unref) {
         this.cleanupInterval.unref();
       }
     }
   }
 
-  // ---- Core check method ----
   async check(
     key: string,
     limit: number,
@@ -58,7 +39,6 @@ class RateLimiter {
       this.buckets.set(key, bucket);
     }
 
-    // Remove old timestamps outside the window
     bucket.timestamps = bucket.timestamps.filter((t) => t > windowStart);
 
     const count = bucket.timestamps.length;
@@ -76,7 +56,6 @@ class RateLimiter {
       };
     }
 
-    // Record this request
     bucket.timestamps.push(now);
 
     return {
@@ -87,10 +66,9 @@ class RateLimiter {
     };
   }
 
-  // ---- Cleanup old buckets to prevent memory leak ----
   private cleanup() {
     const now = Date.now();
-    const MAX_AGE = 60 * 60 * 1000; // 1 hour
+    const MAX_AGE = 60 * 60 * 1000;
 
     for (const [key, bucket] of this.buckets.entries()) {
       bucket.timestamps = bucket.timestamps.filter(
@@ -103,50 +81,34 @@ class RateLimiter {
   }
 }
 
-// Singleton instance
 const limiter = new RateLimiter();
 
 // ==================================================
-// PRESETS
-// ==================================================
-// Different rate limits for different actions.
-//
-// Format: { limit: N requests, windowMs: M milliseconds }
+// DEVELOPMENT-FRIENDLY LIMITS
+// ⚠️ Production এ tighten করুন (LOGIN: 5/min, REGISTER: 3/hour)
 // ==================================================
 export const RATE_LIMITS = {
-  // ---- Auth (very strict) ----
-  LOGIN: { limit: 5, windowMs: 60 * 1000 },           // 5 attempts / minute
-  REGISTER: { limit: 3, windowMs: 60 * 60 * 1000 },   // 3 / hour
-  PASSWORD_RESET: { limit: 3, windowMs: 60 * 60 * 1000 }, // 3 / hour
-  EMAIL_VERIFY: { limit: 5, windowMs: 60 * 60 * 1000 },
+  LOGIN: { limit: 20, windowMs: 60 * 1000 },          // Dev: 20/min
+  REGISTER: { limit: 20, windowMs: 60 * 60 * 1000 },  // Dev: 20/hour
+  PASSWORD_RESET: { limit: 10, windowMs: 60 * 60 * 1000 },
+  EMAIL_VERIFY: { limit: 10, windowMs: 60 * 60 * 1000 },
 
-  // ---- Financial (strict) ----
-  WALLET_TOPUP: { limit: 10, windowMs: 60 * 60 * 1000 },  // 10 / hour
-  CHECKOUT: { limit: 10, windowMs: 60 * 1000 },           // 10 / minute
-  PAYMENT_SUBMIT: { limit: 5, windowMs: 60 * 1000 },      // 5 / minute
+  WALLET_TOPUP: { limit: 10, windowMs: 60 * 60 * 1000 },
+  CHECKOUT: { limit: 10, windowMs: 60 * 1000 },
+  PAYMENT_SUBMIT: { limit: 5, windowMs: 60 * 1000 },
 
-  // ---- User actions (moderate) ----
-  REVIEW_SUBMIT: { limit: 5, windowMs: 60 * 60 * 1000 },  // 5 / hour
-  SUPPORT_TICKET: { limit: 3, windowMs: 60 * 60 * 1000 }, // 3 / hour
-  CONTACT_FORM: { limit: 5, windowMs: 60 * 60 * 1000 },   // 5 / hour
+  REVIEW_SUBMIT: { limit: 5, windowMs: 60 * 60 * 1000 },
+  SUPPORT_TICKET: { limit: 5, windowMs: 60 * 60 * 1000 },
+  CONTACT_FORM: { limit: 5, windowMs: 60 * 60 * 1000 },
   WISHLIST: { limit: 30, windowMs: 60 * 1000 },
 
-  // ---- Public (permissive) ----
-  SEARCH: { limit: 60, windowMs: 60 * 1000 },             // 60 / minute
+  SEARCH: { limit: 60, windowMs: 60 * 1000 },
   PRODUCT_VIEW: { limit: 120, windowMs: 60 * 1000 },
   API_GENERAL: { limit: 100, windowMs: 60 * 1000 },
 
-  // ---- Admin actions ----
   ADMIN_ACTION: { limit: 200, windowMs: 60 * 1000 },
 } as const;
 
-// ==================================================
-// HELPER — Rate limit check
-// ==================================================
-// Usage:
-//   const result = await rateLimit("login", `ip:${ip}`, RATE_LIMITS.LOGIN)
-//   if (!result.success) return { error: "Too many attempts. Try again in Xs" }
-// ==================================================
 export async function rateLimit(
   prefix: string,
   identifier: string,
@@ -166,15 +128,6 @@ export async function rateLimit(
   };
 }
 
-// ==================================================
-// HELPER — Get client IP from request
-// ==================================================
-// Considers common proxy headers in order of trust:
-//   1. CF-Connecting-IP (Cloudflare)
-//   2. X-Real-IP (Nginx)
-//   3. X-Forwarded-For (first IP in chain)
-//   4. Fallback: "unknown"
-// ==================================================
 export function getClientIp(headers: Headers): string {
   const cfIp = headers.get("cf-connecting-ip");
   if (cfIp) return cfIp;
@@ -190,9 +143,6 @@ export function getClientIp(headers: Headers): string {
   return "unknown";
 }
 
-// ==================================================
-// HELPER — Standard "too many requests" response
-// ==================================================
 export function rateLimitResponse(retryAfter: number) {
   return {
     success: false,

@@ -84,41 +84,38 @@ const nextConfig: NextConfig = {
 
   // ---- Image optimization ----
   images: {
-    remotePatterns: [
-      // Cloudinary (recommended for user uploads)
-      {
-        protocol: "https",
-        hostname: "res.cloudinary.com",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "cloudinary.com",
-        pathname: "/**",
-      },
-      // Imgur
-      {
-        protocol: "https",
-        hostname: "i.imgur.com",
-        pathname: "/**",
-      },
-      // Gamming Bazaar backend (existing)
-      {
-        protocol: "https",
-        hostname: "backend.gammingbazaar.com",
-        pathname: "/**",
-      },
-      // Generic fallback — allow all HTTPS images
-      {
-        protocol: "https",
-        hostname: "**",
-      },
-    ],
-    formats: ["image/avif", "image/webp"],
-    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-  },
+  remotePatterns: [
+    {
+      protocol: "https",
+      hostname: "res.cloudinary.com",
+      pathname: "/**",
+    },
+    {
+      protocol: "https",
+      hostname: "cloudinary.com",
+      pathname: "/**",
+    },
+    {
+      protocol: "https",
+      hostname: "i.imgur.com",
+      pathname: "/**",
+    },
+    {
+      protocol: "https",
+      hostname: "backend.gammingbazaar.com",
+      pathname: "/**",
+    },
+    {
+      protocol: "https",
+      hostname: "**",
+    },
+  ],
+  formats: ["image/avif", "image/webp"],
+  qualities: [60, 70, 75, 80, 85, 90, 100],  // ✅ Add this
+  minimumCacheTTL: 60 * 60 * 24 * 30,
+  deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+  imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+},
 
   // ---- Redirects ----
   async redirects() {

@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -44,8 +45,8 @@ export function CategoryForm({
   const [name, setName] = useState(initialData?.name || "");
   const [slug, setSlug] = useState(initialData?.slug || "");
   const [autoSlug, setAutoSlug] = useState(mode === "create");
+  const [image, setImage] = useState(initialData?.image || "");
 
-  // Bind categoryId for edit mode
   const action = categoryId
     ? updateCategoryAction.bind(null, categoryId)
     : createCategoryAction;
@@ -71,13 +72,15 @@ export function CategoryForm({
 
   return (
     <form action={formAction} className="space-y-6">
+      {/* Hidden input for image */}
+      <input type="hidden" name="image" value={image} />
+
       {/* Basic Information */}
       <div className="bg-card rounded-xl shadow-card border border-border p-6">
         <h3 className="text-lg font-bold text-content mb-4">
           Basic Information
         </h3>
         <div className="space-y-4">
-          {/* Name */}
           <div>
             <label className="block text-sm font-medium text-content mb-1.5">
               Category নাম *
@@ -98,7 +101,6 @@ export function CategoryForm({
             )}
           </div>
 
-          {/* Slug */}
           <div>
             <label className="block text-sm font-medium text-content mb-1.5">
               Slug *
@@ -125,7 +127,6 @@ export function CategoryForm({
             )}
           </div>
 
-          {/* Description */}
           <div>
             <label className="block text-sm font-medium text-content mb-1.5">
               Description
@@ -139,7 +140,6 @@ export function CategoryForm({
             />
           </div>
 
-          {/* Parent Category */}
           <div>
             <label className="block text-sm font-medium text-content mb-1.5">
               Parent Category (ঐচ্ছিক)
@@ -168,7 +168,6 @@ export function CategoryForm({
           Display Options
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Icon */}
           <div>
             <label className="block text-sm font-medium text-content mb-1.5">
               Icon (emoji বা icon name)
@@ -182,7 +181,6 @@ export function CategoryForm({
             />
           </div>
 
-          {/* Sort Order */}
           <div>
             <label className="block text-sm font-medium text-content mb-1.5">
               Sort Order
@@ -196,17 +194,12 @@ export function CategoryForm({
             />
           </div>
 
-          {/* Image URL */}
+          {/* ✅ Category Image Upload */}
           <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-content mb-1.5">
-              Image URL (ঐচ্ছিক)
-            </label>
-            <input
-              name="image"
-              type="url"
-              defaultValue={initialData?.image || ""}
-              placeholder="https://..."
-              className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-content focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            <ImageUpload
+              label="Category Image (ঐচ্ছিক)"
+              value={image}
+              onChange={(url) => setImage(url)}
             />
           </div>
         </div>

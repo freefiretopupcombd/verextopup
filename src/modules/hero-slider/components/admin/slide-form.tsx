@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Save, X, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 
+import { ImageUpload } from "@/components/ui/image-upload";
 import {
   createHeroSlideAction,
   updateHeroSlideAction,
@@ -30,6 +31,11 @@ export function HeroSlideForm({
   initialData?: SlideInput;
 }) {
   const router = useRouter();
+  const [image, setImage] = useState(initialData?.image || "");
+  const [imageMobile, setImageMobile] = useState(
+    initialData?.imageMobile || ""
+  );
+
   const [state, formAction, isPending] = useActionState(
     slideId
       ? updateHeroSlideAction.bind(null, slideId)
@@ -49,6 +55,10 @@ export function HeroSlideForm({
 
   return (
     <form action={formAction} className="space-y-6">
+      {/* Hidden inputs */}
+      <input type="hidden" name="image" value={image} />
+      <input type="hidden" name="imageMobile" value={imageMobile} />
+
       {/* Images Section */}
       <div className="bg-bg-card border border-border rounded-xl p-4 sm:p-6 space-y-4">
         <div className="flex items-center gap-2 mb-2">
@@ -56,47 +66,30 @@ export function HeroSlideForm({
           <h3 className="text-lg font-bold text-text-primary">Slider Image</h3>
         </div>
 
-        <Field label="Desktop Image URL *" error={state.errors?.image?.[0]}>
-          <input
-            name="image"
-            required
-            type="url"
-            defaultValue={d?.image || ""}
-            placeholder="https://res.cloudinary.com/... or /image.jpg"
-            className={input()}
+        {/* ✅ Desktop Image Upload */}
+        <Field label="Desktop Image *" error={state.errors?.image?.[0]}>
+          <ImageUpload
+            label="Upload Desktop Image"
+            value={image}
+            onChange={(url) => setImage(url)}
           />
           <p className="mt-1 text-xs text-text-muted">
             Recommended: 1920x600px (landscape)
           </p>
         </Field>
 
+        {/* ✅ Mobile Image Upload */}
         <Field
-          label="Mobile Image URL (Optional)"
+          label="Mobile Image (Optional)"
           error={state.errors?.imageMobile?.[0]}
           hint="খালি রাখলে ডেস্কটপ ইমেজ মোবাইলেও দেখাবে"
         >
-          <input
-            name="imageMobile"
-            type="url"
-            defaultValue={d?.imageMobile || ""}
-            placeholder="https://... (mobile-optimized image)"
-            className={input()}
+          <ImageUpload
+            label="Upload Mobile Image"
+            value={imageMobile}
+            onChange={(url) => setImageMobile(url)}
           />
         </Field>
-
-        {/* Image Preview */}
-        {d?.image && (
-          <div className="mt-4">
-            <p className="text-xs font-medium text-text-muted mb-2">Preview</p>
-            <div className="relative w-full aspect-[3/1] rounded-lg overflow-hidden border border-border bg-bg-secondary">
-              <img
-                src={d.image}
-                alt="Preview"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Settings Section */}

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, Plus, Trash2, Copy } from "lucide-react";
 import { toast } from "sonner";
 
+import { ImageUpload } from "@/components/ui/image-upload";
 import {
   createPaymentMethodAction,
   updatePaymentMethodAction,
@@ -57,6 +58,7 @@ export function PaymentForm({ mode, paymentId, initialData }: FormProps) {
   const [inputFields, setInputFields] = useState<InputField[]>(
     initialData?.inputFields || []
   );
+  const [logo, setLogo] = useState(initialData?.logo || "");
 
   const action = paymentId
     ? updatePaymentMethodAction.bind(null, paymentId)
@@ -79,9 +81,6 @@ export function PaymentForm({ mode, paymentId, initialData }: FormProps) {
     if (autoSlug) setSlug(generatePaymentSlug(val));
   };
 
-  // ==================================================
-  // Input Fields management
-  // ==================================================
   const addField = () => {
     setInputFields([
       ...inputFields,
@@ -141,6 +140,7 @@ export function PaymentForm({ mode, paymentId, initialData }: FormProps) {
         name="inputFields"
         value={JSON.stringify(inputFields)}
       />
+      <input type="hidden" name="logo" value={logo} />
 
       {/* Basic Info */}
       <Section title="Basic Information">
@@ -183,15 +183,14 @@ export function PaymentForm({ mode, paymentId, initialData }: FormProps) {
             </select>
           </Field>
 
-          <Field label="Logo URL (ঐচ্ছিক)">
-            <input
-              name="logo"
-              type="url"
-              defaultValue={d?.logo || ""}
-              placeholder="https://..."
-              className={input()}
+          {/* ✅ Payment Logo Upload */}
+          <div className="sm:col-span-2">
+            <ImageUpload
+              label="Payment Method Logo"
+              value={logo}
+              onChange={(url) => setLogo(url)}
             />
-          </Field>
+          </div>
         </div>
       </Section>
 
@@ -337,7 +336,6 @@ export function PaymentForm({ mode, paymentId, initialData }: FormProps) {
                   </select>
                 </div>
 
-                {/* ⭐ ROLE SELECTOR — NEW */}
                 <div>
                   <Label>
                     Field Role{" "}

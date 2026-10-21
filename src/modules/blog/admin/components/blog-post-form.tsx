@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 
+import { ImageUpload } from "@/components/ui/image-upload";
 import {
   createBlogPostAction,
   updateBlogPostAction,
@@ -30,6 +31,9 @@ export function BlogPostForm({
   const [slug, setSlug] = useState(initialData?.slug || "");
   const [autoSlug, setAutoSlug] = useState(mode === "create");
   const [status, setStatus] = useState(initialData?.status || "DRAFT");
+  const [featuredImage, setFeaturedImage] = useState(
+    initialData?.featuredImage || ""
+  );
 
   const action = postId
     ? updateBlogPostAction.bind(null, postId)
@@ -56,6 +60,9 @@ export function BlogPostForm({
 
   return (
     <form action={formAction} className="space-y-6">
+      {/* Hidden input for featured image */}
+      <input type="hidden" name="featuredImage" value={featuredImage} />
+
       {/* Basic Info */}
       <Section title="Basic Information">
         <div className="space-y-4">
@@ -118,15 +125,14 @@ export function BlogPostForm({
       {/* Media & Category */}
       <Section title="Media & Category">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Featured Image URL">
-            <input
-              name="featuredImage"
-              type="url"
-              defaultValue={d?.featuredImage || ""}
-              placeholder="https://..."
-              className={input()}
+          {/* ✅ Blog Featured Image Upload */}
+          <div className="sm:col-span-2">
+            <ImageUpload
+              label="Featured Image"
+              value={featuredImage}
+              onChange={(url) => setFeaturedImage(url)}
             />
-          </Field>
+          </div>
 
           <Field label="Category">
             <select

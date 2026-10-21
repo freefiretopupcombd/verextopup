@@ -26,10 +26,11 @@ export function PackageSelector({
   const { usdToBdt } = useCurrency();
 
   return (
-    <div className="lg:bg-bg-card lg:border lg:border-border lg:rounded-xl lg:p-4">
+    // ✅ মোবাইল ভিউতে বাইরের কার্ডের প্যাডিং কমিয়ে ফাঁকা জায়গা বাঁচানো হলো
+    <div className="bg-bg-card border border-border rounded-xl p-2 sm:p-4">
       {/* Header */}
-      <div className="flex items-center gap-2.5 mb-3.5 px-1 lg:px-0">
-        <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold shrink-0">
+      <div className="flex items-center gap-2.5 mb-3 px-1 sm:px-0">
+        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold shrink-0">
           1
         </div>
         <h2 className="font-bold text-text-primary text-sm sm:text-base">
@@ -41,7 +42,7 @@ export function PackageSelector({
       </div>
 
       {/* Grid — Mobile 2 cols, Desktop 3 cols */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
         {variants.map((v) => {
           const outOfStock =
             !v.unlimitedStock && v.stock !== null && v.stock <= 0;
@@ -52,11 +53,16 @@ export function PackageSelector({
             v.stock <= 5;
           const selected = selectedId === v.id;
           const finalPrice = v.salePrice ?? v.price;
-
+          
           const usdtAmount =
             v.usdtPrice != null && v.usdtPrice > 0
               ? v.usdtPrice
               : finalPrice / usdToBdt;
+
+          // ✅ BDT এর শেষে .0 থাকলে তা রিমুভ করার লজিক
+          const formattedPrice = finalPrice % 1 === 0 
+            ? finalPrice.toString() 
+            : finalPrice.toFixed(2).replace(/\.?0+$/, '');
 
           // Stock text
           const stockText = outOfStock
@@ -65,7 +71,7 @@ export function PackageSelector({
               ? "In Stock"
               : lowStock
                 ? `Only ${v.stock} left`
-                : `In Stock (${v.stock})`;
+                : `In Stock`;
 
           const stockColor = outOfStock
             ? "text-danger"
@@ -85,7 +91,7 @@ export function PackageSelector({
               type="button"
               disabled={outOfStock}
               onClick={() => onSelect(v.id)}
-              className={`relative flex flex-col rounded-lg border transition-all text-left overflow-hidden ${
+              className={`relative flex flex-col rounded-lg sm:rounded-xl border transition-all text-left overflow-hidden ${
                 outOfStock
                   ? "border-border bg-bg-secondary/50 opacity-50 cursor-not-allowed"
                   : selected
@@ -93,18 +99,16 @@ export function PackageSelector({
                     : "border-border bg-[#1a1a24] hover:border-[#7C3AED]/50"
               }`}
             >
-              {/* 📱 Mobile view e selected card er upore bam kone tick mark */}
               {selected && (
-                <div className="absolute top-0 left-0 w-5 h-5 bg-[#7C3AED] rounded-br-md flex items-center justify-center z-10 lg:hidden">
-                  <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                <div className="absolute top-0 left-0 w-4 h-4 sm:w-5 sm:h-5 bg-[#7C3AED] rounded-br-md flex items-center justify-center z-10 lg:hidden">
+                  <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" strokeWidth={3} />
                 </div>
               )}
 
               {/* ═══ LINE 1: Radio + Name | Price ═══ */}
-              <div className={`flex items-center justify-between gap-1.5 px-3 py-2.5 ${selected ? 'pl-7 lg:pl-3' : ''}`}>
-                {/* Left: Radio (Desktop only) + Name */}
-                <div className="flex items-center gap-2 min-w-0">
-                  {/* Desktop view er jonno radio button */}
+              {/* ✅ মোবাইলে প্যাডিং এবং স্পেসিং আরও কমানো হয়েছে (px-2 py-1.5) */}
+              <div className={`flex items-center justify-between gap-1 px-2 sm:px-3 py-1.5 sm:py-2.5 ${selected ? 'pl-6 sm:pl-7 lg:pl-3' : ''}`}>
+                <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                   <div
                     className={`hidden lg:flex w-3.5 h-3.5 rounded-full border-2 items-center justify-center shrink-0 transition ${
                       selected
@@ -118,7 +122,7 @@ export function PackageSelector({
                   </div>
                   
                   <span
-                    className={`text-[13px] font-bold truncate ${
+                    className={`text-[11px] sm:text-[13px] font-bold truncate ${
                       selected ? "text-[#7C3AED]" : "text-text-primary"
                     }`}
                   >
@@ -126,13 +130,12 @@ export function PackageSelector({
                   </span>
                 </div>
 
-                {/* Right: BDT price */}
                 <div
-                  className={`text-[13px] font-bold shrink-0 ${
+                  className={`text-[11px] sm:text-[13px] font-bold shrink-0 ${
                     selected ? "text-[#7C3AED]" : "text-[#F59E0B]"
                   }`}
                 >
-                  ৳{finalPrice.toFixed(1)}
+                  ৳{formattedPrice}
                 </div>
               </div>
 
@@ -140,20 +143,19 @@ export function PackageSelector({
               <div className="h-px bg-border/40 w-full" />
 
               {/* ═══ LINE 2: Stock | USDT Price ═══ */}
-              <div className={`flex items-center justify-between gap-1.5 px-3 py-2 ${selected ? 'pl-7 lg:pl-3' : ''}`}>
-                {/* Left: stock */}
+              {/* ✅ মোবাইলে নিচের লাইনের প্যাডিং এবং ফন্ট সাইজ ছোট করা হয়েছে */}
+              <div className={`flex items-center justify-between gap-1 px-2 sm:px-3 py-1 sm:py-2 ${selected ? 'pl-6 sm:pl-7 lg:pl-3' : ''}`}>
                 <div
-                  className={`flex items-center gap-1.5 text-[10px] font-medium ${stockColor}`}
+                  className={`flex items-center gap-1 sm:gap-1.5 text-[9px] sm:text-[10px] font-medium ${stockColor}`}
                 >
                   <span
-                    className={`w-1 h-1 rounded-full ${stockDot} shrink-0`}
+                    className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${stockDot} shrink-0`}
                   />
                   <span className="truncate">{stockText}</span>
                 </div>
 
-                {/* Right: USDT */}
-                <div className="text-[10px] text-text-muted font-medium shrink-0">
-                  = ${usdtAmount.toFixed(2)} USDT
+                <div className="text-[9px] sm:text-[10px] text-text-muted font-medium shrink-0">
+                  = ${usdtAmount.toFixed(2)}
                 </div>
               </div>
             </button>

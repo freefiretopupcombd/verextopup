@@ -42,25 +42,24 @@ const securityHeaders = [
     value: "same-origin",
   },
   {
-    key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.com",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src 'self' data: blob: https:",
-      "font-src 'self' data: https://fonts.gstatic.com",
-      // ✅ connect-src-এ ইমেজ হোস্টগুলো যোগ করা হলো
-      "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://res.cloudinary.com https://backend.gammingbazaar.com https://www.u7buy.com",
-      // ✅ Vercel এর জন্য manifest-src যোগ করা হলো
-      "manifest-src 'self' https://vercel.com",
-      "frame-src 'self' https://www.googletagmanager.com",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "frame-ancestors 'self'",
-      "upgrade-insecure-requests",
-    ].join("; "),
-  },
+  key: "Content-Security-Policy",
+  value: [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "img-src 'self' data: blob: https:",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    // ✅ Cloudinary এবং অন্যান্য ইমেজ হোস্ট এখানে যোগ করুন
+    "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://res.cloudinary.com https://backend.gammingbazaar.com",
+    "manifest-src 'self' https://vercel.com",
+    "frame-src 'self' https://www.googletagmanager.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'self'",
+    "upgrade-insecure-requests",
+  ].join("; "),
+},
 ];
 
 const nextConfig: NextConfig = {

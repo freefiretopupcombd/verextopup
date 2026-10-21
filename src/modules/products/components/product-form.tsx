@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Loader2, AlertCircle, Info } from "lucide-react";
 import { toast } from "sonner";
 
@@ -261,15 +262,22 @@ export function ProductForm({
       {/* ============ Images ============ */}
       <Section title="Images">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Thumbnail URL">
-            <input
-              name="thumbnail"
-              type="url"
-              defaultValue={d?.thumbnail || ""}
-              placeholder="https://..."
-              className={input()}
-            />
-          </Field>
+          <Field label="Thumbnail Image">
+  <input
+    type="hidden"
+    name="thumbnail"
+    value={d?.thumbnail || ""}
+    onChange={() => {}} // Optional: Keep hidden input for form submission if needed
+  />
+  <ImageUpload
+    value={d?.thumbnail || ""}
+    onChange={(url) => {
+      // Update hidden input value
+      const input = document.querySelector('input[name="thumbnail"]') as HTMLInputElement;
+      if (input) input.value = url;
+    }}
+  />
+</Field>
           <Field label="Product Icon (emoji)">
             <input
               name="icon"

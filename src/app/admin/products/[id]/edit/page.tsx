@@ -53,6 +53,7 @@ export default async function EditProductPage({
     shortDesc: product.shortDesc,
     fullDesc: product.fullDesc,
     thumbnail: product.thumbnail,
+    imageAlt: product.imageAlt, // ✅ এই লাইনটি নতুন যোগ করা হয়েছে
     icon: product.icon,
     price: Number(product.price),
     currency: product.currency,
@@ -108,6 +109,7 @@ export default async function EditProductPage({
       price: Number(v.price),
       salePrice: v.salePrice ? Number(v.salePrice) : "",
       costPrice: v.costPrice ? Number(v.costPrice) : "",
+      usdtPrice: v.usdtPrice ? Number(v.usdtPrice) : "", // ✅ USDT Price এখানে যোগ করা হলো
       stock: v.stock ?? "",
       unlimitedStock: v.unlimitedStock,
       status: v.status as "ACTIVE" | "INACTIVE",

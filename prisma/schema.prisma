@@ -132,6 +132,7 @@ model Category {
   slug        String  @unique
   description String? @db.Text
   image       String?
+  imageAlt String?
   icon        String?
   parentId    String?
   sortOrder   Int     @default(0)
@@ -191,6 +192,7 @@ model Product {
   fullDesc    String?  @db.Text
   icon        String?
   thumbnail   String?
+  imageAlt  String? @db.Text
   price       Decimal  @default(0) @db.Decimal(12, 2)
   salePrice   Decimal? @db.Decimal(12, 2)
   costPrice   Decimal? @db.Decimal(12, 2)

@@ -206,6 +206,7 @@ function serializeProduct(product: any) {
     fullDesc: product.fullDesc,
     icon: product.icon,
     thumbnail: product.thumbnail,
+    imageAlt: product.imageAlt, // ✅
     price: Number(product.price),
     currency: product.currency,
     status: product.status,
@@ -257,6 +258,7 @@ function serializeProduct(product: any) {
       sku: v.sku,
       price: Number(v.price),
       salePrice: v.salePrice ? Number(v.salePrice) : null,
+      usdtPrice: v.usdtPrice ? Number(v.usdtPrice) : null, // ✅
       stock: v.stock,
       unlimitedStock: v.unlimitedStock,
       icon: (v.customFields as any)?.icon || null,
@@ -318,9 +320,10 @@ function serializeProductForCard(product: any) {
     id: product.id,
     name: product.name,
     slug: product.slug,
-    productType: product.productType, // ✅ যোগ করা হয়েছে
+    productType: product.productType,
     icon: product.icon,
     thumbnail: product.thumbnail,
+    imageAlt: product.imageAlt, // ✅
     price: Number(product.price),
     currency: product.currency,
     soldCount: product.soldCount,
@@ -394,7 +397,7 @@ export async function getSubscriptionProducts(limit = 6) {
     id: p.id,
     name: p.name,
     slug: p.slug,
-    productType: p.productType, // ✅ যোগ করা হয়েছে
+    productType: p.productType,
     thumbnail: p.thumbnail,
     icon: p.icon,
     subtitle: p.shortDesc,

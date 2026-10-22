@@ -33,6 +33,7 @@ type InitialData = {
   shortDesc?: string | null;
   fullDesc?: string | null;
   thumbnail?: string | null;
+  imageAlt?: string | null;
   icon?: string | null;
   price: number;
   currency: string;
@@ -104,6 +105,10 @@ export function ProductForm({
     initialData?.fields || []
   );
 
+  // ✅ Image states
+  const [thumbnail, setThumbnail] = useState(initialData?.thumbnail || "");
+  const [imageAlt, setImageAlt] = useState(initialData?.imageAlt || "");
+
   // SEO live character counters
   const [seoTitleLen, setSeoTitleLen] = useState(
     initialData?.seoTitle?.length || 0
@@ -143,6 +148,10 @@ export function ProductForm({
         value={JSON.stringify(variations)}
       />
       <input type="hidden" name="fields" value={JSON.stringify(fields)} />
+      {/* ✅ Hidden input for thumbnail (client state) */}
+      <input type="hidden" name="thumbnail" value={thumbnail} />
+      {/* ✅ Hidden input for imageAlt (client state) */}
+      <input type="hidden" name="imageAlt" value={imageAlt} />
 
       {/* ============ Basic ============ */}
       <Section title="Basic Information">
@@ -263,21 +272,27 @@ export function ProductForm({
       <Section title="Images">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Thumbnail Image">
-  <input
-    type="hidden"
-    name="thumbnail"
-    value={d?.thumbnail || ""}
-    onChange={() => {}} // Optional: Keep hidden input for form submission if needed
-  />
-  <ImageUpload
-    value={d?.thumbnail || ""}
-    onChange={(url) => {
-      // Update hidden input value
-      const input = document.querySelector('input[name="thumbnail"]') as HTMLInputElement;
-      if (input) input.value = url;
-    }}
-  />
-</Field>
+            <ImageUpload
+              value={thumbnail}
+              onChange={(url) => setThumbnail(url)}
+            />
+          </Field>
+
+          {/* ✅ Alt Text ফিল্ড — value ও onChange সহ */}
+          <Field label="Image Alt Text (SEO)">
+            <input
+              name="imageAlt"
+              value={imageAlt}
+              onChange={(e) => setImageAlt(e.target.value)}
+              placeholder="Free Fire 25 Diamond Top Up BD"
+              className={input()}
+            />
+            <p className="mt-1 text-[11px] text-text-muted">
+              ছবি লোড না হলে বা SEO-এর জন্য এই টেক্সটটি দেখাবে। খালি রাখলে
+              প্রোডাক্টের নাম ব্যবহৃত হবে।
+            </p>
+          </Field>
+
           <Field label="Product Icon (emoji)">
             <input
               name="icon"
@@ -382,8 +397,8 @@ export function ProductForm({
           </select>
         </Field>
       </Section>
-      
-                  {/* ============ Dynamic Badges ============ */}
+
+      {/* ============ Dynamic Badges ============ */}
       <Section
         title="Product Badges"
         subtitle="Product-এর নিচে ৩টা পর্যন্ত badge দেখাতে পারেন — text + icon + color সব admin control"
@@ -448,13 +463,11 @@ export function ProductForm({
           })}
 
           <p className="text-xs text-text-muted">
-            💡 টিপ: খালি রাখলে default badges (Instant, Region, Verified)
-            দেখাবে। কিছু লিখলে সেটাই দেখাবে।
+            💡 টিপ: খালি রাখলে default badges (Instant, Region, Verified) দেখাবে।
+            কিছু লিখলে সেটাই দেখাবে।
           </p>
         </div>
       </Section>
-
-
 
       {/* ============ Instructions & Terms ============ */}
       <Section title="Instructions & Terms">
@@ -480,19 +493,13 @@ export function ProductForm({
         </div>
       </Section>
 
-      {/* ============================================
-          SEO — CORE
-          ============================================ */}
+      {/* ============ SEO — CORE ============ */}
       <Section
         title="SEO — Core"
         subtitle="Google search result এ যা দেখা যাবে"
       >
         <div className="space-y-4">
-          {/* SEO Title with live counter */}
-          <Field
-            label="SEO Title"
-            error={state.errors?.seoTitle?.[0]}
-          >
+          <Field label="SEO Title" error={state.errors?.seoTitle?.[0]}>
             <input
               name="seoTitle"
               maxLength={SEO_LIMITS.TITLE_MAX}
@@ -508,7 +515,6 @@ export function ProductForm({
             />
           </Field>
 
-          {/* SEO Description */}
           <Field
             label="SEO Description"
             error={state.errors?.seoDescription?.[0]}
@@ -529,11 +535,7 @@ export function ProductForm({
             />
           </Field>
 
-          {/* Keywords */}
-          <Field
-            label="SEO Keywords"
-            error={state.errors?.seoKeywords?.[0]}
-          >
+          <Field label="SEO Keywords" error={state.errors?.seoKeywords?.[0]}>
             <input
               name="seoKeywords"
               defaultValue={d?.seoKeywords || ""}
@@ -541,11 +543,11 @@ export function ProductForm({
               className={input()}
             />
             <p className="mt-1 text-xs text-text-muted">
-              কমা দিয়ে আলাদা করুন। এটি Google এখন কম গুরুত্ব দেয়, তবে internal reference এ কাজে লাগে।
+              কমা দিয়ে আলাদা করুন। এটি Google এখন কম গুরুত্ব দেয়, তবে
+              internal reference এ কাজে লাগে।
             </p>
           </Field>
 
-          {/* Canonical */}
           <Field
             label="Canonical URL (ঐচ্ছিক)"
             error={state.errors?.canonicalUrl?.[0]}
@@ -558,21 +560,19 @@ export function ProductForm({
               className={`${input()} font-mono text-sm`}
             />
             <p className="mt-1 text-xs text-text-muted">
-              খালি রাখলে auto-generate হবে। Duplicate content থাকলে এখানে original URL দিন।
+              খালি রাখলে auto-generate হবে। Duplicate content থাকলে এখানে
+              original URL দিন।
             </p>
           </Field>
         </div>
       </Section>
 
-      {/* ============================================
-          SEO — ADVANCED (2026)
-          ============================================ */}
+      {/* ============ SEO — ADVANCED ============ */}
       <Section
         title="SEO — Advanced (2026)"
         subtitle="Google AI Overviews, social sharing, এবং indexing control"
       >
         <div className="space-y-4">
-          {/* Primary Keyword */}
           <Field
             label="Primary Keyword"
             error={state.errors?.primaryKeyword?.[0]}
@@ -584,11 +584,11 @@ export function ProductForm({
               className={input()}
             />
             <p className="mt-1 text-xs text-text-muted">
-              এই page-এর মূল target keyword (একটি মাত্র)। SEO score calculation ও internal linking এ ব্যবহার হবে।
+              এই page-এর মূল target keyword (একটি মাত্র)। SEO score calculation
+              ও internal linking এ ব্যবহার হবে।
             </p>
           </Field>
 
-          {/* Secondary Keywords */}
           <Field label="Secondary Keywords">
             <input
               name="secondaryKeywords"
@@ -601,7 +601,6 @@ export function ProductForm({
             </p>
           </Field>
 
-          {/* Breadcrumb Label */}
           <Field label="Breadcrumb Label (ঐচ্ছিক)">
             <input
               name="breadcrumbLabel"
@@ -610,7 +609,8 @@ export function ProductForm({
               className={input()}
             />
             <p className="mt-1 text-xs text-text-muted">
-              খালি রাখলে product name ব্যবহার হবে। Breadcrumb এ ছোট নাম চাইলে এখানে দিন।
+              খালি রাখলে product name ব্যবহার হবে। Breadcrumb এ ছোট নাম চাইলে
+              এখানে দিন।
             </p>
           </Field>
 
@@ -651,7 +651,8 @@ export function ProductForm({
                   className={input()}
                 />
                 <p className="mt-1 text-xs text-text-muted">
-                  Facebook/WhatsApp এ share করলে এই image দেখাবে। Ideal size: 1200x630px।
+                  Facebook/WhatsApp এ share করলে এই image দেখাবে। Ideal size:
+                  1200x630px।
                 </p>
               </Field>
 
@@ -703,7 +704,9 @@ export function ProductForm({
               <div className="flex items-start gap-2 p-3 rounded-lg bg-info/10 border border-info/20">
                 <Info className="w-4 h-4 text-info shrink-0 mt-0.5" />
                 <p className="text-xs text-text-primary">
-                  <strong>Noindex করলে</strong> এই product Google search এ দেখাবে না, কিন্তু direct link দিয়ে কেউ access করতে পারবে। শুধু अस्थायीভাবে লুকাতে চাইলে ব্যবহার করুন।
+                  <strong>Noindex করলে</strong> এই product Google search এ
+                  দেখাবে না, কিন্তু direct link দিয়ে কেউ access করতে পারবে।
+                  শুধু अस्थायीভাবে লুকাতে চাইলে ব্যবহার করুন।
                 </p>
               </div>
             </div>
@@ -811,7 +814,7 @@ function Toggle({
 }
 
 // ==================================================
-// CHARACTER COUNTER (with color coding)
+// CHARACTER COUNTER
 // ==================================================
 function CharCounter({
   current,

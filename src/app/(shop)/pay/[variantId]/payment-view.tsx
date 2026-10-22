@@ -2,15 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import {
   Loader2,
   Copy,
   Check,
   ShieldCheck,
-  Zap,
-  Wallet,
   AlertCircle,
+  Wallet,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -110,7 +109,6 @@ export function PaymentView({
   };
 
   const handlePlaceOrder = () => {
-    // Validation
     if (paymentType === "instant") {
       if (!paymentMethod) {
         toast.error("Payment method পাওয়া যায়নি");
@@ -155,438 +153,224 @@ export function PaymentView({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-text-primary">
-          Complete Your Payment
-        </h1>
+    <div className="min-h-screen bg-[#0B0F19] text-slate-200 py-8 px-4 sm:px-6 font-sans">
+      <div className="max-w-xl mx-auto space-y-4">
         
-      </div>
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-white">
+            Complete Your Payment
+          </h1>
+          <p className="text-sm text-slate-400 mt-1">
+            Please complete the payment to proceed
+          </p>
+        </div>
 
-      {/* Product Summary */}
-      <div className="bg-bg-card border border-border rounded-xl p-4 sm:p-5">
-        <div className="flex gap-3 items-center">
-          <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary/20 to-bg-secondary border border-border flex items-center justify-center overflow-hidden shrink-0">
-            {product.thumbnail ? (
-              <img
-                src={product.thumbnail}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-            ) : product.icon ? (
-              <span className="text-3xl">{product.icon}</span>
-            ) : (
-              <span className="text-3xl">🎮</span>
-            )}
-          </div>
-
-          <div className="flex-1 min-w-0">
-            {product.categoryName && (
-              <div className="text-[10px] font-semibold text-primary uppercase tracking-wider">
-                {product.categoryName}
-              </div>
-            )}
-            <h2 className="font-bold text-text-primary text-sm sm:text-base truncate">
-              {product.name}
-            </h2>
-            <div className="text-xs text-text-muted mt-0.5">
-              {variant.icon && <span className="mr-1">{variant.icon}</span>}
-              {variant.name} × {quantity}
+        {/* Product & Amount Info Box (Exactly as your screenshot) */}
+        <div className="bg-[#1A1F2E] rounded-xl p-4 flex items-center justify-between shadow-lg border border-[#2A3143]">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-[#0B0F19] flex items-center justify-center border border-[#2A3143] overflow-hidden shrink-0">
+              {product.thumbnail ? (
+                <img
+                  src={product.thumbnail}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-2xl">{product.icon || "🎮"}</span>
+              )}
+            </div>
+            <div>
+              <p className="text-xs text-slate-400 mb-0.5">
+                Invoice ID
+              </p>
+              <p className="text-sm font-bold text-white tracking-wide">
+                {variant.id.slice(0, 10).toUpperCase()}
+              </p>
             </div>
           </div>
-
-          <div className="text-right shrink-0">
-            <DualPrice
-              amountBDT={totalAmount}
-              size="md"
-              layout="stacked"
-              primaryClassName="text-primary"
-            />
+          <div className="text-right">
+            <p className="text-xs text-slate-400 mb-0.5">
+              Amount
+            </p>
+            <p className="text-lg font-bold text-white">
+              ৳{totalAmount.toFixed(2)}
+            </p>
           </div>
         </div>
 
-        {/* Product fields (Player ID etc.) */}
-        {Object.entries(productFieldValues).filter(([_, v]) => v).length > 0 && (
-          <div className="mt-3 pt-3 border-t border-border space-y-1.5">
-            {Object.entries(productFieldValues)
-              .filter(([_, v]) => v)
-              .map(([k, v]) => (
-                <div key={k} className="flex justify-between text-xs">
-                  <span className="text-text-muted capitalize">
-                    {k.replace(/_/g, " ")}
-                  </span>
-                  <span className="text-text-primary font-mono">{v}</span>
-                </div>
-              ))}
-          </div>
-        )}
-      </div>
-
-      {/* ============================================
-          WALLET PAYMENT
-      ============================================ */}
-      {paymentType === "wallet" && (
-        <div className="bg-bg-card border border-border rounded-xl p-4 sm:p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Wallet className="w-5 h-5 text-primary" />
-            <h2 className="font-bold text-text-primary text-base">
-              Wallet Payment
-            </h2>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-text-muted">Your Balance</span>
-              <span className="font-mono text-text-primary">
-                ৳{walletBalance.toFixed(2)}
-              </span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-text-muted">Total</span>
-              <span className="font-mono text-text-primary">
-                ৳{totalAmount.toFixed(2)}
-              </span>
-            </div>
-            <div className="flex justify-between text-sm pt-3 border-t border-border">
-              <span className="text-text-muted">After Payment</span>
-              <span
-                className={`font-mono font-semibold ${
-                  walletBalance - totalAmount >= 0
-                    ? "text-success"
-                    : "text-danger"
-                }`}
-              >
-                ৳{(walletBalance - totalAmount).toFixed(2)}
-              </span>
-            </div>
-
-            {walletBalance < totalAmount && (
-              <div className="bg-danger/10 border border-danger/30 rounded-lg p-3 flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
-                <p className="text-xs text-danger">
-                  Wallet-এ যথেষ্ট balance নেই। Recharge করুন অথবা অন্য
-                  payment method select করুন।
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ============================================
-          INSTANT PAYMENT
-      ============================================ */}
-      {paymentType === "instant" && paymentMethod && (
-        <>
-          {/* Payment Instructions */}
-          <div className="bg-bg-card border border-border rounded-xl p-4 sm:p-5">
+        {/* Wallet Payment Section */}
+        {paymentType === "wallet" && (
+          <div className="bg-[#1A1F2E] rounded-xl p-5 border border-[#2A3143] shadow-lg">
             <div className="flex items-center gap-2 mb-4">
-              <Zap className="w-5 h-5 text-warning" />
-              <h2 className="font-bold text-text-primary text-base">
-                Payment Instructions
-              </h2>
+              <Wallet className="w-5 h-5 text-indigo-400" />
+              <h2 className="font-semibold text-white">Wallet Payment</h2>
             </div>
-
-            <div className="space-y-4">
-              {/* Method */}
-              <div className="bg-primary/5 border border-primary/20 rounded-lg p-3.5">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-lg bg-bg-card border border-border flex items-center justify-center shrink-0 font-bold text-xs text-text-primary">
-                    {paymentMethod.logo ? (
-                      <img
-                        src={paymentMethod.logo}
-                        alt={paymentMethod.name}
-                        className="w-full h-full object-contain rounded-lg"
-                      />
-                    ) : (
-                      paymentMethod.slug.slice(0, 4).toUpperCase()
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[10px] text-text-muted uppercase tracking-wider">
-                      Payment Method
-                    </div>
-                    <div className="font-bold text-text-primary text-base">
-                      {paymentMethod.name}
-                    </div>
-                  </div>
-                </div>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between text-slate-400">
+                <span>Your Balance</span>
+                <span className="text-white">৳{walletBalance.toFixed(2)}</span>
               </div>
-
-              {/* Amount */}
-              <div>
-                <div className="text-xs text-text-muted mb-1.5">
-                  Amount to Pay
-                </div>
-                <div className="bg-bg-secondary border border-border rounded-lg p-3 flex items-center justify-between">
-                  <DualPrice
-                    amountBDT={totalAmount}
-                    size="md"
-                    layout="inline"
-                    primaryClassName="text-primary"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      copyToClipboard(
-                        totalAmount.toFixed(2),
-                        "amount"
-                      )
-                    }
-                    className="inline-flex items-center gap-1.5 text-xs text-text-muted hover:text-primary transition px-2 py-1 rounded"
-                  >
-                    {copiedField === "amount" ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-success" />
-                        Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        Copy
-                      </>
-                    )}
-                  </button>
-                </div>
+              <div className="flex justify-between text-slate-400">
+                <span>Total</span>
+                <span className="text-white">৳{totalAmount.toFixed(2)}</span>
               </div>
-
-              {/* Receiving Number */}
-              {paymentMethod.accountNumber && (
-                <div>
-                  <div className="text-xs text-text-muted mb-1.5">
-                    Send Money To
-                  </div>
-                  <div className="bg-bg-secondary border border-border rounded-lg p-3 flex items-center justify-between">
-                    <span className="font-mono font-bold text-text-primary text-base">
-                      {paymentMethod.accountNumber}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        copyToClipboard(
-                          paymentMethod.accountNumber!,
-                          "account"
-                        )
-                      }
-                      className="inline-flex items-center gap-1.5 text-xs text-text-muted hover:text-primary transition px-2 py-1 rounded"
-                    >
-                      {copiedField === "account" ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-success" />
-                          Copied
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5" />
-                          Copy
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Merchant number */}
-              {paymentMethod.merchantNumber && (
-                <div>
-                  <div className="text-xs text-text-muted mb-1.5">
-                    Merchant Number
-                  </div>
-                  <div className="bg-bg-secondary border border-border rounded-lg p-3 flex items-center justify-between">
-                    <span className="font-mono font-bold text-text-primary text-base">
-                      {paymentMethod.merchantNumber}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        copyToClipboard(
-                          paymentMethod.merchantNumber!,
-                          "merchant"
-                        )
-                      }
-                      className="inline-flex items-center gap-1.5 text-xs text-text-muted hover:text-primary transition px-2 py-1 rounded"
-                    >
-                      {copiedField === "merchant" ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-success" />
-                          Copied
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5" />
-                          Copy
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Note */}
-              <div className="bg-warning/10 border border-warning/30 rounded-lg p-3.5">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
-                  <div className="text-xs text-text-secondary leading-relaxed">
-                    <strong className="text-warning">Note:</strong> উপরের
-                    number-এ ঠিক{" "}
-                    <strong className="text-text-primary">
-                      ৳{totalAmount.toFixed(2)}
-                    </strong>{" "}
-                    sent করুন। Payment সম্পন্ন করার পর নিচের form-এ details
-                    দিন।
-                  </div>
-                </div>
-              </div>
-
-              {/* Custom instructions from admin */}
-              {paymentMethod.instructions && (
-                <div className="pt-3 border-t border-border">
-                  <div className="text-xs font-semibold text-text-secondary mb-2">
-                    Instructions
-                  </div>
-                  <p className="text-xs text-text-muted whitespace-pre-wrap leading-relaxed">
-                    {paymentMethod.instructions}
+              {walletBalance < totalAmount && (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex items-start gap-2 mt-2">
+                  <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                  <p className="text-xs text-red-400">
+                    Wallet-এ যথেষ্ট balance নেই। Recharge করুন।
                   </p>
                 </div>
               )}
             </div>
           </div>
+        )}
 
-          {/* Payment Form */}
-          {methodFields.length > 0 && (
-            <div className="bg-bg-card border border-border rounded-xl p-4 sm:p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <ShieldCheck className="w-5 h-5 text-primary" />
-                <h2 className="font-bold text-text-primary text-base">
-                  Submit Payment Details
-                </h2>
-              </div>
-
-              <div className="space-y-4">
-                {methodFields.map((field: any) => {
-                  const error = paymentFieldErrors[field.name];
-                  return (
-                    <div key={field.name}>
-                      <label className="block text-sm font-medium text-text-primary mb-1.5">
-                        {field.label}
-                        {field.required && (
-                          <span className="text-danger ml-0.5">*</span>
-                        )}
-                      </label>
-
-                      {field.fieldType === "textarea" ? (
-                        <textarea
-                          value={paymentFieldValues[field.name] || ""}
-                          onChange={(e) =>
-                            handlePaymentFieldChange(
-                              field.name,
-                              e.target.value
-                            )
-                          }
-                          placeholder={
-                            field.placeholder || `Enter ${field.label}`
-                          }
-                          rows={3}
-                          className={`w-full px-3 py-2.5 rounded-lg bg-bg-input border text-sm text-text-primary placeholder:text-text-dim focus:outline-none focus:border-primary transition resize-none ${
-                            error ? "border-danger" : "border-border"
-                          }`}
-                        />
-                      ) : (
-                        <input
-                          type={
-                            field.fieldType === "number"
-                              ? "number"
-                              : field.fieldType
-                          }
-                          value={paymentFieldValues[field.name] || ""}
-                          onChange={(e) =>
-                            handlePaymentFieldChange(
-                              field.name,
-                              e.target.value
-                            )
-                          }
-                          placeholder={
-                            field.placeholder || `Enter ${field.label}`
-                          }
-                          className={`w-full px-3 py-2.5 rounded-lg bg-bg-input border text-sm text-text-primary placeholder:text-text-dim focus:outline-none focus:border-primary transition ${
-                            error ? "border-danger" : "border-border"
-                          }`}
-                        />
-                      )}
-
-                      {field.helpText && !error && (
-                        <p className="mt-1 text-[10px] text-text-dim">
-                          {field.helpText}
-                        </p>
-                      )}
-
-                      {error && (
-                        <p className="mt-1 text-xs text-danger">{error}</p>
-                      )}
-                    </div>
-                  );
-                })}
-
-                {/* Confirmation */}
-                <label className="flex items-start gap-2.5 cursor-pointer bg-bg-secondary rounded-lg p-3.5">
-                  <input
-                    type="checkbox"
-                    checked={confirmed}
-                    onChange={(e) => setConfirmed(e.target.checked)}
-                    className="w-4 h-4 mt-0.5 text-primary rounded shrink-0"
+        {/* Instant Payment Section (Now in Dark Theme) */}
+        {paymentType === "instant" && paymentMethod && (
+          <div className="bg-[#1A1F2E] border border-[#2A3143] rounded-xl p-5 shadow-lg space-y-5">
+            
+            {/* Payment Method Header */}
+            <div className="flex items-center gap-3 border-b border-[#2A3143] pb-4">
+              <div className="w-10 h-10 rounded bg-[#0B0F19] flex items-center justify-center border border-[#2A3143] overflow-hidden">
+                {paymentMethod.logo ? (
+                  <img
+                    src={paymentMethod.logo}
+                    alt={paymentMethod.name}
+                    className="w-full h-full object-contain p-1"
                   />
-                  <span className="text-xs text-text-secondary leading-relaxed">
-                    আমি নিশ্চিত করছি যে আমি উপরের number-এ{" "}
-                    <strong className="text-text-primary">
-                      ৳{totalAmount.toFixed(2)}
-                    </strong>{" "}
-                    sent করেছি এবং দেওয়া তথ্য সঠিক।
+                ) : (
+                  <span className="font-bold text-xs text-slate-300">
+                    {paymentMethod.slug.slice(0, 4).toUpperCase()}
                   </span>
-                </label>
+                )}
+              </div>
+              <div>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wider">
+                  Payment Method
+                </p>
+                <h3 className="text-sm font-bold text-white">
+                  {paymentMethod.name}
+                </h3>
               </div>
             </div>
-          )}
-        </>
-      )}
 
-      {/* Total + Place Order */}
-      <div className="bg-bg-card border border-border rounded-xl p-4 sm:p-5">
-        <div className="flex items-baseline justify-between mb-4">
-          <span className="text-sm text-text-muted">Total Amount</span>
-          <DualPrice
-            amountBDT={totalAmount}
-            size="xl"
-            layout="stacked"
-            primaryClassName="text-primary"
-          />
+            {/* Instruction Note */}
+            <p className="text-sm text-slate-300">
+              Send exactly <strong className="text-white">৳{totalAmount.toFixed(2)}</strong> to the number below
+            </p>
+
+            {/* Dynamic Account Number with Copy Button */}
+            {paymentMethod.accountNumber && (
+              <div className="space-y-2">
+                <label className="block text-xs font-medium text-slate-400">
+                  Payment Number
+                </label>
+                <div className="bg-[#0B0F19] border border-[#2A3143] rounded-lg p-3.5 flex items-center justify-between">
+                  <span className="font-mono font-bold text-white text-lg">
+                    {paymentMethod.accountNumber}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      copyToClipboard(paymentMethod.accountNumber!, "account")
+                    }
+                    className="text-slate-400 hover:text-white transition p-1"
+                  >
+                    {copiedField === "account" ? (
+                      <Check className="w-5 h-5 text-green-400" />
+                    ) : (
+                      <Copy className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Dynamic Input Fields from Admin */}
+            {methodFields.map((field: any) => {
+              const error = paymentFieldErrors[field.name];
+              return (
+                <div key={field.name} className="space-y-2">
+                  <label className="block text-xs font-medium text-slate-400">
+                    {field.label} {field.required && <span className="text-red-400">*</span>}
+                  </label>
+                  {field.fieldType === "textarea" ? (
+                    <textarea
+                      value={paymentFieldValues[field.name] || ""}
+                      onChange={(e) =>
+                        handlePaymentFieldChange(field.name, e.target.value)
+                      }
+                      placeholder={field.placeholder || `Enter ${field.label}`}
+                      rows={3}
+                      className={`w-full px-4 py-3 rounded-lg bg-[#0B0F19] border text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 transition resize-none ${
+                        error ? "border-red-500" : "border-[#2A3143]"
+                      }`}
+                    />
+                  ) : (
+                    <input
+                      type={field.fieldType === "number" ? "number" : field.fieldType}
+                      value={paymentFieldValues[field.name] || ""}
+                      onChange={(e) =>
+                        handlePaymentFieldChange(field.name, e.target.value)
+                      }
+                      placeholder={field.placeholder || `Enter ${field.label}`}
+                      className={`w-full px-4 py-3 rounded-lg bg-[#0B0F19] border text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 transition ${
+                        error ? "border-red-500" : "border-[#2A3143]"
+                      }`}
+                    />
+                  )}
+                  {error && <p className="text-xs text-red-400 mt-1">{error}</p>}
+                </div>
+              );
+            })}
+
+            {/* Confirmation Checkbox */}
+            <div className="pt-2">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={confirmed}
+                  onChange={(e) => setConfirmed(e.target.checked)}
+                  className="w-4 h-4 mt-0.5 rounded border-[#2A3143] bg-[#0B0F19] text-indigo-500 focus:ring-indigo-500 shrink-0"
+                />
+                <span className="text-xs text-slate-300 leading-relaxed">
+                  I confirm that I have sent <strong className="text-white">৳{totalAmount.toFixed(2)}</strong> to the above number.
+                </span>
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* Place Order Button */}
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={handlePlaceOrder}
+            disabled={
+              isPending ||
+              (paymentType === "wallet" && walletBalance < totalAmount)
+            }
+            className="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl transition flex items-center justify-center gap-2 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-900/20"
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                Place Order
+              </>
+            )}
+          </button>
         </div>
-
-        <button
-          type="button"
-          onClick={handlePlaceOrder}
-          disabled={
-            isPending ||
-            (paymentType === "wallet" && walletBalance < totalAmount)
-          }
-          className="w-full bg-gradient-primary text-white font-semibold py-4 rounded-lg transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isPending ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Order তৈরি হচ্ছে...
-            </>
-          ) : (
-            <>
-              <ShieldCheck className="w-5 h-5" />
-              Place Order
-            </>
-          )}
-        </button>
-
-        <p className="text-[10px] text-text-muted text-center mt-3">
-          🔒 100% secure payment guaranteed
+        
+        <p className="text-center text-xs text-slate-500 mt-4 flex items-center justify-center gap-1">
+          <ShieldCheck className="w-4 h-4" /> 100% secure payment guaranteed
         </p>
+
       </div>
     </div>
   );

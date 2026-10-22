@@ -11,6 +11,7 @@ export type ProductCardData = {
   name: string;
   slug: string;
   thumbnail: string | null;
+  imageAlt?: string | null; // ✅ নতুন ফিল্ড
   icon: string | null;
   productType: string;
   category: { name: string; slug: string } | null;
@@ -51,7 +52,7 @@ export function ProductCard({
           {product.thumbnail ? (
             <Image
               src={product.thumbnail}
-              alt={product.name}
+              alt={product.imageAlt || product.name} // ✅ Alt Text
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 250px"
               className="object-cover group-hover:scale-105 transition duration-300"

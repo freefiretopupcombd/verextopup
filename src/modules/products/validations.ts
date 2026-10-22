@@ -130,6 +130,7 @@ export const variationSchema = z.object({
     .optional()
     .nullable()
     .or(z.literal("")),
+  usdtPrice: z.coerce.number().min(0).optional().nullable().or(z.literal("")), // ✅
   stock: z.coerce.number().int().min(0).optional().nullable().or(z.literal("")),
   unlimitedStock: z.boolean().default(true),
   status: z.enum(["ACTIVE", "INACTIVE"]).default("ACTIVE"),
@@ -265,6 +266,7 @@ export const productSchema = z
 
     // ---- Images ----
     thumbnail: z.string().optional().or(z.literal("")),
+    imageAlt: z.string().max(200, "Alt Text ২০০ character এর বেশি হতে পারে না").optional().or(z.literal("")), // ✅ নতুন
     icon: z.string().max(50).optional().or(z.literal("")),
 
     // ---- Base price ----

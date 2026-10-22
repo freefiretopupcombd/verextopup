@@ -52,6 +52,7 @@ function parseFormData(formData: FormData) {
     shortDesc: (formData.get("shortDesc") as string) || undefined,
     fullDesc: (formData.get("fullDesc") as string) || undefined,
     thumbnail: (formData.get("thumbnail") as string) || undefined,
+    imageAlt: (formData.get("imageAlt") as string) || undefined,
     icon: (formData.get("icon") as string) || undefined,
     price: formData.get("price") || 0,
     currency: formData.get("currency") || "BDT",
@@ -165,6 +166,11 @@ export async function createProductAction(
 
   const data = parsed.data;
 
+console.log("========== DEBUG IMAGE ALT ==========");
+console.log("FormData imageAlt:", formData.get("imageAlt"));
+console.log("Parsed data imageAlt:", data.imageAlt);
+console.log("====================================");
+
   try {
     const existing = await prisma.product.findUnique({
       where: { slug: data.slug },
@@ -214,6 +220,7 @@ export async function createProductAction(
         shortDesc: data.shortDesc || null,
         fullDesc: data.fullDesc || null,
         thumbnail: data.thumbnail || null,
+        imageAlt: data.imageAlt || null,
         icon: data.icon || null,
         price: data.price,
         currency: data.currency,
@@ -336,6 +343,11 @@ export async function updateProductAction(
 
   const data = parsed.data;
 
+console.log("========== DEBUG IMAGE ALT ==========");
+console.log("FormData imageAlt:", formData.get("imageAlt"));
+console.log("Parsed data imageAlt:", data.imageAlt);
+console.log("====================================");
+
   try {
     const existingSlug = await prisma.product.findFirst({
       where: { slug: data.slug, NOT: { id: productId } },
@@ -373,6 +385,7 @@ export async function updateProductAction(
           shortDesc: data.shortDesc || null,
           fullDesc: data.fullDesc || null,
           thumbnail: data.thumbnail || null,
+          imageAlt: data.imageAlt || null,
           icon: data.icon || null,
           price: data.price,
           currency: data.currency,

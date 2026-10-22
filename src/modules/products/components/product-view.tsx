@@ -24,6 +24,7 @@ import { HowItWorks } from "./how-it-works";
 import { DualPrice } from "@/modules/currency/components/dual-price";
 import { createUddoktaPaySessionAction } from "@/modules/payments/actions";
 import { createOrderFromProductAction } from "@/modules/orders/actions";
+
 type Variant = {
   id: string;
   name: string;
@@ -84,6 +85,7 @@ type Product = {
   shortDesc: string | null;
   fullDesc: string | null;
   thumbnail: string | null;
+  imageAlt?: string | null; // ✅ নতুন ফিল্ড
   icon: string | null;
   brand: string | null;
   instructions: string | null;
@@ -136,13 +138,8 @@ export function ProductView({
   const [quantity, setQuantity] = useState(1);
 
   const [paymentChoice, setPaymentChoice] = useState<
-    "WALLET" | "INSTANT" | "UDDOKTAPAY"
-  >(() => {
-    if (isLoggedIn && walletBalance > 0) return "WALLET";
-    if (paymentMethods.length > 0) return "INSTANT";
-    if (uddoktaPayEnabled) return "UDDOKTAPAY";
-    return "INSTANT";
-  });
+  "WALLET" | "INSTANT" | "UDDOKTAPAY" | null
+>(null); // ✅ ডিফল্টভাবে কোনো পেমেন্ট সিলেক্ট থাকবে না
 
   const [selectedMethodId, setSelectedMethodId] = useState<string | null>(
     paymentMethods[0]?.id || null
@@ -232,81 +229,85 @@ export function ProductView({
 
   const [walletSubmitting, setWalletSubmitting] = useState(false);
 
-const handleGoPayment = async () => {
-  const validation = validateVariantAndFields();
-  if (!validation.ok) {
-    toast.error(validation.message || "Validation failed");
+  const handleGoPayment = async () => {
+    if (!paymentChoice) {
+    toast.error("অনুগ্রহ করে একটি পেমেন্ট মেথড সিলেক্ট করুন");
     return;
   }
-
-  if (paymentChoice === "INSTANT" && !selectedMethodId) {
-    toast.error("Payment method select করুন");
-    return;
-  }
-
-  if (paymentChoice === "WALLET" && !hasEnoughWallet) {
-    toast.error("Wallet-এ যথেষ্ট balance নেই");
-    return;
-  }
-
-  if (!isLoggedIn) {
-    toast.error("Login করুন");
-    redirectToLogin();
-    return;
-  }
-
-  // ==================================================
-  // WALLET — Direct order (skip checkout)
-  // ==================================================
-  if (paymentChoice === "WALLET") {
-    if (walletSubmitting) return;
-    setWalletSubmitting(true);
-
-    try {
-      const formData = new FormData();
-      formData.set("variantId", selectedVariant!.id);
-      formData.set("quantity", String(quantity));
-      formData.set("paymentType", "wallet");
-      formData.set("fields", JSON.stringify(fieldValues));
-
-      const result = await createOrderFromProductAction(formData);
-
-      if (result.success && result.orderNumber) {
-        toast.success("Order সফলভাবে তৈরি হয়েছে!");
-        router.push(`/order/${result.orderNumber}`);
-        router.refresh();
-      } else {
-        toast.error(result.message || "Order failed");
-      }
-    } catch (error) {
-      console.error("Wallet order error:", error);
-      toast.error("কিছু ভুল হয়েছে");
-    } finally {
-      setWalletSubmitting(false);
+    const validation = validateVariantAndFields();
+    if (!validation.ok) {
+      toast.error(validation.message || "Validation failed");
+      return;
     }
 
-    return;
-  }
+    if (paymentChoice === "INSTANT" && !selectedMethodId) {
+      toast.error("Payment method select করুন");
+      return;
+    }
 
-  // ==================================================
-  // INSTANT — Checkout page (existing flow)
-  // ==================================================
-  const params = new URLSearchParams({
-    variantId: selectedVariant!.id,
-    quantity: String(quantity),
-    paymentType: "instant",
-  });
+    if (paymentChoice === "WALLET" && !hasEnoughWallet) {
+      toast.error("Wallet-এ যথেষ্ট balance নেই");
+      return;
+    }
 
-  if (selectedMethodId) {
-    params.set("methodId", selectedMethodId);
-  }
+    if (!isLoggedIn) {
+      toast.error("Login করুন");
+      redirectToLogin();
+      return;
+    }
 
-  Object.entries(fieldValues).forEach(([k, v]) => {
-    if (v) params.set(k, v);
-  });
+    // ==================================================
+    // WALLET — Direct order (skip checkout)
+    // ==================================================
+    if (paymentChoice === "WALLET") {
+      if (walletSubmitting) return;
+      setWalletSubmitting(true);
 
-  router.push(`/pay/${selectedVariant!.id}?${params.toString()}`);
-};
+      try {
+        const formData = new FormData();
+        formData.set("variantId", selectedVariant!.id);
+        formData.set("quantity", String(quantity));
+        formData.set("paymentType", "wallet");
+        formData.set("fields", JSON.stringify(fieldValues));
+
+        const result = await createOrderFromProductAction(formData);
+
+        if (result.success && result.orderNumber) {
+          toast.success("Order সফলভাবে তৈরি হয়েছে!");
+          router.push(`/order/${result.orderNumber}`);
+          router.refresh();
+        } else {
+          toast.error(result.message || "Order failed");
+        }
+      } catch (error) {
+        console.error("Wallet order error:", error);
+        toast.error("কিছু ভুল হয়েছে");
+      } finally {
+        setWalletSubmitting(false);
+      }
+
+      return;
+    }
+
+    // ==================================================
+    // INSTANT — Checkout page (existing flow)
+    // ==================================================
+    const params = new URLSearchParams({
+      variantId: selectedVariant!.id,
+      quantity: String(quantity),
+      paymentType: "instant",
+    });
+
+    if (selectedMethodId) {
+      params.set("methodId", selectedMethodId);
+    }
+
+    Object.entries(fieldValues).forEach(([k, v]) => {
+      if (v) params.set(k, v);
+    });
+
+    router.push(`/pay/${selectedVariant!.id}?${params.toString()}`);
+  };
 
   const handleUddoktaPay = async () => {
     if (uddoktaPayLoading) return;
@@ -372,6 +373,7 @@ const handleGoPayment = async () => {
 
   const canProceed =
     !!selectedVariant &&
+    paymentChoice !== null &&
     (paymentChoice === "WALLET" ? hasEnoughWallet : !!selectedMethodId);
 
   const isUddoktaPay = paymentChoice === "UDDOKTAPAY" && uddoktaPayEnabled;
@@ -388,6 +390,7 @@ const handleGoPayment = async () => {
         categoryName={product.category?.name}
         icon={product.icon}
         thumbnail={product.thumbnail}
+        imageAlt={product.imageAlt} // ✅ Alt text পাস করা হলো
         rating={averageRating}
         reviewCount={totalReviews}
         region="BD"
@@ -572,46 +575,46 @@ const handleGoPayment = async () => {
 
             {/* CTA Button */}
             {isUddoktaPay ? (
-  <button
-    type="button"
-    onClick={handleUddoktaPay}
-    disabled={uddoktaPayLoading}
-    className="w-full bg-gradient-primary text-white font-bold py-4 rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-60 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.01] active:scale-[0.99] text-base"
-  >
-    {uddoktaPayLoading ? (
-      <Loader2 className="w-5 h-5 animate-spin" />
-    ) : (
-      <Zap className="w-5 h-5" />
-    )}
-    {uddoktaPayLoading ? "Redirecting..." : "Pay Now"}
-  </button>
-) : (
-  <button
-    type="button"
-    onClick={handleGoPayment}
-    disabled={!canProceed || walletSubmitting}
-    className="w-full bg-gradient-primary text-white font-bold py-4 rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.01] active:scale-[0.99] text-base"
-  >
-    {isWalletChoice && walletSubmitting ? (
-      <>
-        <Loader2 className="w-5 h-5 animate-spin" />
-        Processing...
-      </>
-    ) : isWalletChoice ? (
-      <>
-        <ShoppingBag className="w-5 h-5" />
-        Pay with Wallet
-        <ArrowRight className="w-5 h-5" />
-      </>
-    ) : (
-      <>
-        <ShoppingBag className="w-5 h-5" />
-        Proceed to Payment
-        <ArrowRight className="w-5 h-5" />
-      </>
-    )}
-  </button>
-)}
+              <button
+                type="button"
+                onClick={handleUddoktaPay}
+                disabled={uddoktaPayLoading}
+                className="w-full bg-gradient-primary text-white font-bold py-4 rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-60 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.01] active:scale-[0.99] text-base"
+              >
+                {uddoktaPayLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Zap className="w-5 h-5" />
+                )}
+                {uddoktaPayLoading ? "Redirecting..." : "Pay Now"}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleGoPayment}
+                disabled={!canProceed || walletSubmitting}
+                className="w-full bg-gradient-primary text-white font-bold py-4 rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.01] active:scale-[0.99] text-base"
+              >
+                {isWalletChoice && walletSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : isWalletChoice ? (
+                  <>
+                    <ShoppingBag className="w-5 h-5" />
+                    Pay with Wallet
+                    <ArrowRight className="w-5 h-5" />
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBag className="w-5 h-5" />
+                    Proceed to Payment
+                    <ArrowRight className="w-5 h-5" />
+                  </>
+                )}
+              </button>
+            )}
 
             {/* Trust line */}
             <div className="flex items-center justify-center gap-3 text-[11px] text-text-muted">

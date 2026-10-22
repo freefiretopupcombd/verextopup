@@ -9,7 +9,6 @@ import {
   ShieldCheck,
   AlertCircle,
   Wallet,
-  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -153,11 +152,12 @@ export function PaymentView({
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-slate-200 py-8 px-4 sm:px-6 font-sans">
+    // Removed min-h-screen and py-8 to fix background and spacing issue
+    <div className="text-slate-200 font-sans w-full">
       <div className="max-w-xl mx-auto space-y-4">
         
-        {/* Header */}
-        <div className="text-center mb-6">
+        {/* Header (Reduced top margin) */}
+        <div className="text-center mb-5">
           <h1 className="text-xl sm:text-2xl font-bold text-white">
             Complete Your Payment
           </h1>
@@ -166,37 +166,77 @@ export function PaymentView({
           </p>
         </div>
 
-        {/* Product & Amount Info Box (Exactly as your screenshot) */}
-        <div className="bg-[#1A1F2E] rounded-xl p-4 flex items-center justify-between shadow-lg border border-[#2A3143]">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-[#0B0F19] flex items-center justify-center border border-[#2A3143] overflow-hidden shrink-0">
-              {product.thumbnail ? (
-                <img
-                  src={product.thumbnail}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="text-2xl">{product.icon || "🎮"}</span>
-              )}
+                        {/* Product & Amount Info Box (Exactly matching your screenshot) */}
+        <div className="bg-[#1A1F2E] rounded-xl p-4 sm:p-5 shadow-lg border border-[#2A3143]">
+          <div className="flex items-start justify-between gap-4">
+            
+            {/* Left Side: Image & Details */}
+            <div className="flex gap-4">
+              {/* Product Image */}
+              <div className="w-[60px] h-[60px] sm:w-[70px] sm:h-[70px] rounded-xl bg-[#0B0F19] flex items-center justify-center border border-[#2A3143] overflow-hidden shrink-0">
+                {product.thumbnail ? (
+                  <img
+                    src={product.thumbnail}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-3xl">{product.icon || "🎮"}</span>
+                )}
+              </div>
+
+              {/* Text Details */}
+              <div>
+                {/* Category Name */}
+                {product.categoryName && (
+                  <p className="text-[11px] font-bold text-[#7c3aed] uppercase tracking-wider mb-0.5">
+                    {product.categoryName}
+                  </p>
+                )}
+                
+                {/* Product Name */}
+                <h2 className="text-sm sm:text-base font-bold text-white leading-tight mb-1">
+                  {product.name}
+                </h2>
+                
+                {/* Variant / Package Name */}
+                <div className="flex items-center gap-1.5 text-xs sm:text-sm text-[#60A5FA] font-medium">
+                  <span>{variant.icon || "💎"}</span>
+                  <span>{variant.name} × {quantity}</span>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-slate-400 mb-0.5">
-                Invoice ID
-              </p>
-              <p className="text-sm font-bold text-white tracking-wide">
-                {variant.id.slice(0, 10).toUpperCase()}
-              </p>
+
+            {/* Right Side: Prices */}
+            <div className="text-right shrink-0 flex flex-col items-end">
+              {/* BDT Price (Using DualPrice or just styled text) */}
+              <div className="text-[#7c3aed] text-lg sm:text-xl font-bold">
+                ৳{totalAmount.toFixed(2)}
+              </div>
+              {/* USDT Price Mockup (If you have real USDT data, pass it here, otherwise it's static based on your screenshot) */}
+              <div className="text-xs text-slate-400 mt-0.5">
+                USDT 3.11
+              </div>
             </div>
+            
           </div>
-          <div className="text-right">
-            <p className="text-xs text-slate-400 mb-0.5">
-              Amount
-            </p>
-            <p className="text-lg font-bold text-white">
-              ৳{totalAmount.toFixed(2)}
-            </p>
-          </div>
+
+          {/* Bottom Section: Player ID / Dynamic Fields */}
+          {/* Note: We use productFieldValues object to show any fields user submitted like Player ID */}
+          {Object.entries(productFieldValues).filter(([_, v]) => v).length > 0 && (
+            <div className="mt-4 pt-3 border-t border-[#2A3143] space-y-2">
+              {Object.entries(productFieldValues)
+                .filter(([_, v]) => v)
+                .map(([k, v]) => (
+                  <div key={k} className="flex justify-between items-center text-xs sm:text-sm">
+                    <span className="text-slate-400 capitalize">
+                      {k.replace(/_/g, " ")} {/* Replaces underscore with space */}
+                    </span>
+                    <span className="text-white font-mono">{v}</span>
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
 
         {/* Wallet Payment Section */}
@@ -227,7 +267,7 @@ export function PaymentView({
           </div>
         )}
 
-        {/* Instant Payment Section (Now in Dark Theme) */}
+        {/* Instant Payment Section */}
         {paymentType === "instant" && paymentMethod && (
           <div className="bg-[#1A1F2E] border border-[#2A3143] rounded-xl p-5 shadow-lg space-y-5">
             
@@ -258,8 +298,8 @@ export function PaymentView({
 
             {/* Instruction Note */}
             <p className="text-sm text-slate-300">
-              Send exactly <strong className="text-white">৳{totalAmount.toFixed(2)}</strong> to the number below
-            </p>
+  নিচের নাম্বারে ঠিক <strong className="text-white">৳{totalAmount.toFixed(2)}</strong> টাকা পাঠান
+</p>
 
             {/* Dynamic Account Number with Copy Button */}
             {paymentMethod.accountNumber && (
@@ -336,8 +376,8 @@ export function PaymentView({
                   className="w-4 h-4 mt-0.5 rounded border-[#2A3143] bg-[#0B0F19] text-indigo-500 focus:ring-indigo-500 shrink-0"
                 />
                 <span className="text-xs text-slate-300 leading-relaxed">
-                  I confirm that I have sent <strong className="text-white">৳{totalAmount.toFixed(2)}</strong> to the above number.
-                </span>
+  আমি নিশ্চিত করছি যে আমি উপরের নাম্বারে <strong className="text-white">৳{totalAmount.toFixed(2)}</strong> টাকা পাঠিয়েছি।
+</span>
               </label>
             </div>
           </div>

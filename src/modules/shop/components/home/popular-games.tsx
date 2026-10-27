@@ -11,15 +11,6 @@ import type {
   CategoryWithProducts,
 } from "@/modules/categories/queries";
 
-// ==================================================
-// POPULAR GAMES (Horizontal Drag Scroll)
-// ==================================================
-// Features:
-//   - No arrows (clean)
-//   - Touch/trackpad scroll (native)
-//   - Mouse drag scroll (desktop)
-//   - Click vs drag detection
-// ==================================================
 export function PopularGames({
   categories,
   fetchCategory,
@@ -41,15 +32,12 @@ export function PopularGames({
     hasMoved: false,
   });
 
-  // ==================================================
-  // Mouse drag to scroll
-  // ==================================================
   useEffect(() => {
+    // ... (আগের কোডগুলো ঠিক আছে, কিছু চেঞ্জ করতে হবে না) ...
     const el = scrollRef.current;
     if (!el) return;
 
     const onMouseDown = (e: MouseEvent) => {
-      // Only left click
       if (e.button !== 0) return;
       dragState.current.isDown = true;
       dragState.current.hasMoved = false;
@@ -72,7 +60,6 @@ export function PopularGames({
     const onMouseUp = () => {
       dragState.current.isDown = false;
       el.style.cursor = "grab";
-      // Reset hasMoved after a short delay so click handler can check it
       setTimeout(() => {
         dragState.current.hasMoved = false;
       }, 50);
@@ -97,14 +84,10 @@ export function PopularGames({
     };
   }, []);
 
-  // ==================================================
-  // Click handler (skip if user dragged)
-  // ==================================================
   const handleCardClick = async (category: HomepageCategory) => {
-    // If user was dragging, don't trigger click
+    // ... (আগের কোডগুলো ঠিক আছে) ...
     if (dragState.current.hasMoved) return;
 
-    // Single product → redirect
     if (category.productsCount === 1) {
       setLoadingSlug(category.slug);
       try {
@@ -122,7 +105,6 @@ export function PopularGames({
       return;
     }
 
-    // Multiple products → popup
     setLoadingSlug(category.slug);
     try {
       const data = await fetchCategory(category.slug);
@@ -138,9 +120,10 @@ export function PopularGames({
 
   return (
     <>
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-        {/* Header */}
-        <div className="flex items-end justify-between mb-6">
+      {/* 👇 প্যাডিং কমিয়ে py-4 sm:py-6 করা হয়েছে */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        
+        <div className="flex items-end justify-between mb-3 sm:mb-4">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-text-primary">
               Popular Games
@@ -157,10 +140,10 @@ export function PopularGames({
           </Link>
         </div>
 
-        {/* Horizontal Drag Scroll */}
+        {/* 👇 pb-1 থেকে pb-0 করা হয়েছে */}
         <div
           ref={scrollRef}
-          className="flex gap-4 sm:gap-5 overflow-x-auto pb-3 select-none scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent touch-pan-x"
+          className="flex gap-4 sm:gap-5 overflow-x-auto pb-0 select-none scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent touch-pan-x"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {categories.map((cat) => {
@@ -182,7 +165,6 @@ export function PopularGames({
         </div>
       </section>
 
-      {/* Popup */}
       {activeCategory && (
         <CategoryPopup
           category={activeCategory}

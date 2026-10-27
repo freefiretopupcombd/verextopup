@@ -262,6 +262,7 @@ function serializeProduct(product: any) {
       stock: v.stock,
       unlimitedStock: v.unlimitedStock,
       icon: (v.customFields as any)?.icon || null,
+      sortOrder: v.sortOrder,
     })),
 
     // ---- Fields ----
@@ -328,6 +329,19 @@ function serializeProductForCard(product: any) {
     currency: product.currency,
     soldCount: product.soldCount,
     category: product.category,
+
+     // ✅ EKHANE BADGE DATA ADD KORA HOYECHE
+    badge1Text: product.badge1Text,
+    badge1Icon: product.badge1Icon,
+    badge1Color: product.badge1Color,
+    badge2Text: product.badge2Text,
+    badge2Icon: product.badge2Icon,
+    badge2Color: product.badge2Color,
+    badge3Text: product.badge3Text,
+    badge3Icon: product.badge3Icon,
+    badge3Color: product.badge3Color,
+
+
     firstVariant: firstVariant
       ? {
           name: firstVariant.name,

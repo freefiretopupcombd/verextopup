@@ -16,9 +16,9 @@ export function BlogSection({ posts }: { posts: BlogPost[] }) {
   if (posts.length === 0) return null;
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-16">
       {/* Header */}
-      <div className="flex items-end justify-between mb-6">
+      <div className="flex items-end justify-between mb-6 sm:mb-8">
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center shadow-lg shadow-primary/25">
             <BookOpen className="w-5 h-5" />
@@ -42,7 +42,7 @@ export function BlogSection({ posts }: { posts: BlogPost[] }) {
       </div>
 
       {/* Posts grid — Desktop 4, Mobile 2 */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
         {posts.slice(0, 4).map((post) => (
           <Link
             key={post.id}
@@ -67,18 +67,18 @@ export function BlogSection({ posts }: { posts: BlogPost[] }) {
               )}
 
               {/* Read time badge */}
-              <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm text-white text-[9px] sm:text-[10px] font-medium px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
+              <div className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 flex items-center gap-1 bg-black/60 backdrop-blur-sm text-white text-[9px] sm:text-[10px] font-medium px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
                 <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 {post.readTime}m
               </div>
             </div>
 
             {/* Content */}
-            <div className="p-3 sm:p-4 flex-1 flex flex-col">
+            <div className="p-3 sm:p-4 lg:p-5 flex-1 flex flex-col">
               {/* Category */}
               {post.category && (
                 <span
-                  className="text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full inline-block mb-2 w-fit uppercase tracking-wider"
+                  className="text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full inline-block mb-2 sm:mb-2.5 w-fit uppercase tracking-wider"
                   style={{
                     backgroundColor: `${post.category.color}15`,
                     color: post.category.color || "#7C3AED",
@@ -89,7 +89,7 @@ export function BlogSection({ posts }: { posts: BlogPost[] }) {
               )}
 
               {/* Title */}
-              <h3 className="font-bold text-text-primary text-xs sm:text-sm leading-snug mb-1.5 group-hover:text-primary transition line-clamp-2">
+              <h3 className="font-bold text-text-primary text-xs sm:text-sm leading-snug mb-1.5 sm:mb-2 group-hover:text-primary transition line-clamp-2">
                 {post.title}
               </h3>
 
@@ -101,7 +101,7 @@ export function BlogSection({ posts }: { posts: BlogPost[] }) {
               )}
 
               {/* Footer */}
-              <div className="flex items-center justify-between pt-2.5 border-t border-border mt-auto">
+              <div className="flex items-center justify-between pt-2.5 sm:pt-3 border-t border-border mt-auto">
                 {post.publishedAt && (
                   <span className="flex items-center gap-1 text-[9px] sm:text-[10px] text-text-muted">
                     <Calendar className="w-2.5 h-2.5 sm:w-3 sm:h-3" />

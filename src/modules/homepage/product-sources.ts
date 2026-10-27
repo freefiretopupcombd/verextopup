@@ -47,6 +47,7 @@ export async function fetchProductsBySource(
 // SERIALIZER
 // ==================================================
 function serializeProduct(p: any): SectionProduct {
+  console.log("Product Data check:", p.name, "Badge:", p.badge1Text);
   return {
     id: p.id,
     name: p.name,
@@ -62,6 +63,17 @@ function serializeProduct(p: any): SectionProduct {
     isNew: p.isNew,
     categoryName: p.category?.name || null,
     categorySlug: p.category?.slug || null,
+    
+    // 👇 EKHANE BADGE DATA ADD KORA HOYECHE
+    badge1Text: p.badge1Text,
+    badge1Icon: p.badge1Icon,
+    badge1Color: p.badge1Color,
+    badge2Text: p.badge2Text,
+    badge2Icon: p.badge2Icon,
+    badge2Color: p.badge2Color,
+    badge3Text: p.badge3Text,
+    badge3Icon: p.badge3Icon,
+    badge3Color: p.badge3Color,
   };
 }
 
@@ -79,6 +91,17 @@ const SELECT_BASE = {
   isPopular: true,
   isNew: true,
   category: { select: { name: true, slug: true } },
+  
+  // 👇 EKHANE BADGE FIELD GULO ADD KORA HOYECHE
+  badge1Text: true,
+  badge1Icon: true,
+  badge1Color: true,
+  badge2Text: true,
+  badge2Icon: true,
+  badge2Color: true,
+  badge3Text: true,
+  badge3Icon: true,
+  badge3Color: true,
 } as const;
 
 // ==================================================

@@ -12,6 +12,7 @@ type Variant = {
   stock: number | null;
   unlimitedStock: boolean;
   icon: string | null;
+  sortOrder?: number; // 👈 sortOrder টাইপে অ্যাড করা হলো
 };
 
 export function PackageSelector({
@@ -25,8 +26,14 @@ export function PackageSelector({
 }) {
   const { usdToBdt } = useCurrency();
 
+  // 👇 ১. ভ্যারিয়েশনগুলোকে sortOrder অনুযায়ী সাজানোর লজিক
+  const sortedVariants = [...variants].sort((a, b) => {
+    const orderA = a.sortOrder ?? 0;
+    const orderB = b.sortOrder ?? 0;
+    return orderA - orderB;
+  });
+
   return (
-    // ✅ মোবাইল ভিউতে বাইরের কার্ডের প্যাডিং কমিয়ে ফাঁকা জায়গা বাঁচানো হলো
     <div className="bg-bg-card border border-border rounded-xl p-2 sm:p-4">
       {/* Header */}
       <div className="flex items-center gap-2.5 mb-3 px-1 sm:px-0">
@@ -37,13 +44,14 @@ export function PackageSelector({
           Select Recharge
         </h2>
         <span className="text-xs text-text-muted ml-auto">
-          {variants.length} options
+          {sortedVariants.length} options
         </span>
       </div>
 
       {/* Grid — Mobile 2 cols, Desktop 3 cols */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
-        {variants.map((v) => {
+        {/* 👇 ২. variants এর জায়গায় sortedVariants ম্যাপ করা হলো */}
+        {sortedVariants.map((v) => {
           const outOfStock =
             !v.unlimitedStock && v.stock !== null && v.stock <= 0;
           const lowStock =
@@ -106,7 +114,6 @@ export function PackageSelector({
               )}
 
               {/* ═══ LINE 1: Radio + Name | Price ═══ */}
-              {/* ✅ মোবাইলে প্যাডিং এবং স্পেসিং আরও কমানো হয়েছে (px-2 py-1.5) */}
               <div className={`flex items-center justify-between gap-1 px-2 sm:px-3 py-1.5 sm:py-2.5 ${selected ? 'pl-6 sm:pl-7 lg:pl-3' : ''}`}>
                 <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                   <div
@@ -143,7 +150,6 @@ export function PackageSelector({
               <div className="h-px bg-border/40 w-full" />
 
               {/* ═══ LINE 2: Stock | USDT Price ═══ */}
-              {/* ✅ মোবাইলে নিচের লাইনের প্যাডিং এবং ফন্ট সাইজ ছোট করা হয়েছে */}
               <div className={`flex items-center justify-between gap-1 px-2 sm:px-3 py-1 sm:py-2 ${selected ? 'pl-6 sm:pl-7 lg:pl-3' : ''}`}>
                 <div
                   className={`flex items-center gap-1 sm:gap-1.5 text-[9px] sm:text-[10px] font-medium ${stockColor}`}

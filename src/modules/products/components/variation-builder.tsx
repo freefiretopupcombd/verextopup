@@ -9,7 +9,7 @@ export type Variation = {
   price: number | string;
   salePrice: number | string;
   costPrice: number | string;
-  usdtPrice: number | string;   // ← ✅ নতুন
+  usdtPrice: number | string;
   stock: number | string;
   unlimitedStock: boolean;
   status: "ACTIVE" | "INACTIVE";
@@ -24,6 +24,7 @@ export function VariationBuilder({
   variations: Variation[];
   onChange: (v: Variation[]) => void;
 }) {
+  // 👇 নতুন ভ্যারিয়েশন সবার শেষে যোগ হবে
   const add = () => {
     onChange([
       ...variations,
@@ -33,7 +34,7 @@ export function VariationBuilder({
         price: "",
         salePrice: "",
         costPrice: "",
-        usdtPrice: "",         // ← ✅
+        usdtPrice: "",
         stock: "",
         unlimitedStock: true,
         status: "ACTIVE",
@@ -49,8 +50,11 @@ export function VariationBuilder({
     );
   };
 
+  // 👇 ডিলিট করলে বাকিগুলোর sortOrder আবার 0,1,2 করে সেট হবে
   const remove = (index: number) => {
-    onChange(variations.filter((_, i) => i !== index));
+    const filtered = variations.filter((_, i) => i !== index);
+    const reordered = filtered.map((v, i) => ({ ...v, sortOrder: i }));
+    onChange(reordered);
   };
 
   const duplicate = (index: number) => {
@@ -59,25 +63,34 @@ export function VariationBuilder({
       id: undefined,
       name: variations[index].name + " (copy)",
     };
-    onChange([
+    const newArr = [
       ...variations.slice(0, index + 1),
       copy,
       ...variations.slice(index + 1),
-    ]);
+    ];
+    // ডুপ্লিকেট করার পরও sortOrder আপডেট হবে
+    const reordered = newArr.map((v, i) => ({ ...v, sortOrder: i }));
+    onChange(reordered);
   };
 
+  // 👇 অ্যারো আপ বাটনে ক্লিক করলে sortOrder ঠিক হবে
   const moveUp = (index: number) => {
     if (index === 0) return;
     const next = [...variations];
     [next[index - 1], next[index]] = [next[index], next[index - 1]];
-    onChange(next);
+    
+    const reordered = next.map((v, i) => ({ ...v, sortOrder: i }));
+    onChange(reordered);
   };
 
+  // 👇 অ্যারো ডাউন বাটনে ক্লিক করলে sortOrder ঠিক হবে
   const moveDown = (index: number) => {
     if (index === variations.length - 1) return;
     const next = [...variations];
     [next[index], next[index + 1]] = [next[index + 1], next[index]];
-    onChange(next);
+    
+    const reordered = next.map((v, i) => ({ ...v, sortOrder: i }));
+    onChange(reordered);
   };
 
   return (
@@ -204,7 +217,6 @@ export function VariationBuilder({
                 />
               </div>
 
-              {/* ✅ নতুন: USDT Price */}
               <div>
                 <Label>USDT Price ($)</Label>
                 <input

@@ -270,6 +270,7 @@ export default async function ProductPage({
           shortDesc: product.shortDesc,
           fullDesc: product.fullDesc,
           thumbnail: product.thumbnail,
+          imageAlt: product.imageAlt,
           icon: product.icon,
           brand: product.brand,
           instructions: product.instructions,

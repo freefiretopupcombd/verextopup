@@ -2,14 +2,6 @@
 
 import type { HomepageCategory } from "../queries";
 
-// ==================================================
-// CATEGORY CARD — Horizontal scroll card
-// ==================================================
-// Design matches demo:
-//   - Small square/rounded image (top)
-//   - Category name below (bold, centered)
-//   - Compact, fits in horizontal scroll
-// ==================================================
 export function CategoryCard({
   category,
   onClick,
@@ -21,7 +13,8 @@ export function CategoryCard({
     <button
       type="button"
       onClick={onClick}
-      className="group flex flex-col items-center gap-2 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary rounded-xl"
+      // 👇 gap-2 থেকে gap-1.5 করা হয়েছে
+      className="group flex flex-col items-center gap-1.5 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary rounded-xl"
       aria-label={`View products in ${category.name}`}
     >
       {/* Image container */}

@@ -166,11 +166,6 @@ export async function createProductAction(
 
   const data = parsed.data;
 
-console.log("========== DEBUG IMAGE ALT ==========");
-console.log("FormData imageAlt:", formData.get("imageAlt"));
-console.log("Parsed data imageAlt:", data.imageAlt);
-console.log("====================================");
-
   try {
     const existing = await prisma.product.findUnique({
       where: { slug: data.slug },
@@ -245,24 +240,15 @@ console.log("====================================");
     name: v.name,
     sku: v.sku || null,
     price: v.price,
-    salePrice:
-      v.salePrice !== "" && v.salePrice !== null
-        ? Number(v.salePrice)
-        : null,
-    costPrice:
-      v.costPrice !== "" && v.costPrice !== null
-        ? Number(v.costPrice)
-        : null,
-    usdtPrice:                                    // ← ✅ নতুন
-      v.usdtPrice !== "" && v.usdtPrice !== null
-        ? Number(v.usdtPrice)
-        : null,
-    stock:
-      v.stock !== "" && v.stock !== null ? Number(v.stock) : null,
+    salePrice: v.salePrice !== "" && v.salePrice !== null ? Number(v.salePrice) : null,
+    costPrice: v.costPrice !== "" && v.costPrice !== null ? Number(v.costPrice) : null,
+    usdtPrice: v.usdtPrice !== "" && v.usdtPrice !== null ? Number(v.usdtPrice) : null,
+    stock: v.stock !== "" && v.stock !== null ? Number(v.stock) : null,
     unlimitedStock: v.unlimitedStock,
     status: v.status,
     customFields: v.icon ? { icon: v.icon } : undefined,
-    sortOrder: v.sortOrder ?? i,
+    // 👇 এখানে sortOrder ঠিকমতো i (ইনডেক্স) দিয়ে সেট হচ্ছে কি না নিশ্চিত করুন
+    sortOrder: v.sortOrder ?? i, 
   })),
 },
         fields: {
@@ -301,10 +287,16 @@ console.log("====================================");
     revalidatePath("/admin/products");
     revalidatePath("/products");
 
+    // ✅ Decimal থেকে Number-এ কনভার্ট করে রিটার্ন করা হলো
     return {
       success: true,
       message: "Product সফলভাবে তৈরি হয়েছে",
-      data: product,
+      data: {
+        ...product,
+        price: Number(product.price),
+        salePrice: product.salePrice ? Number(product.salePrice) : null,
+        costPrice: product.costPrice ? Number(product.costPrice) : null,
+      },
     };
   } catch (error) {
     console.error("Create product error:", error);
@@ -342,11 +334,6 @@ export async function updateProductAction(
   }
 
   const data = parsed.data;
-
-console.log("========== DEBUG IMAGE ALT ==========");
-console.log("FormData imageAlt:", formData.get("imageAlt"));
-console.log("Parsed data imageAlt:", data.imageAlt);
-console.log("====================================");
 
   try {
     const existingSlug = await prisma.product.findFirst({
@@ -422,23 +409,14 @@ console.log("====================================");
   name: v.name,
   sku: v.sku || null,
   price: v.price,
-  salePrice:
-    v.salePrice !== "" && v.salePrice !== null
-      ? Number(v.salePrice)
-      : null,
-  costPrice:
-    v.costPrice !== "" && v.costPrice !== null
-      ? Number(v.costPrice)
-      : null,
-  usdtPrice:                                      // ← ✅ নতুন
-    v.usdtPrice !== "" && v.usdtPrice !== null
-      ? Number(v.usdtPrice)
-      : null,
-  stock:
-    v.stock !== "" && v.stock !== null ? Number(v.stock) : null,
+  salePrice: v.salePrice !== "" && v.salePrice !== null ? Number(v.salePrice) : null,
+  costPrice: v.costPrice !== "" && v.costPrice !== null ? Number(v.costPrice) : null,
+  usdtPrice: v.usdtPrice !== "" && v.usdtPrice !== null ? Number(v.usdtPrice) : null,
+  stock: v.stock !== "" && v.stock !== null ? Number(v.stock) : null,
   unlimitedStock: v.unlimitedStock,
   status: v.status,
   customFields: v.icon ? { icon: v.icon } : undefined,
+  // 👇 এখানে sortOrder ঠিকমতো সেট হচ্ছে কি না নিশ্চিত করুন
   sortOrder: v.sortOrder ?? i,
 };
         if (v.id && existingIds.has(v.id)) {

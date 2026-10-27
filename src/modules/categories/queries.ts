@@ -16,7 +16,7 @@ export async function getHomepageCategories() {
   const categories = await prisma.category.findMany({
     where: {
       status: "ACTIVE",
-      showOnHomepage: true,
+      // showOnHomepage: true,  <-- এটি কমেন্ট করে দিন
     },
     orderBy: [
       { updatedAt: "desc" },

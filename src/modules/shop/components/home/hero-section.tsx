@@ -38,13 +38,13 @@ function DefaultHero() {
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary rounded-full blur-[120px] opacity-20" />
       </div>
 
-      <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 flex items-center">
+      <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
         <div className="max-w-2xl">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-text-primary leading-tight">
             Welcome to{" "}
             <span className="text-gradient-primary">VerexTopUp</span>
           </h2>
-          <p className="text-sm sm:text-base text-text-secondary mt-4 max-w-lg">
+          <p className="text-sm sm:text-base text-text-secondary mt-4 sm:mt-5 max-w-lg">
             Your one-stop platform for game top-ups, digital subscriptions,
             and gift cards at the best prices.
           </p>

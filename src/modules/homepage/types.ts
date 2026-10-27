@@ -91,6 +91,17 @@ export type SectionProduct = {
   isNew: boolean;
   categoryName?: string | null;
   categorySlug?: string | null;
+  
+  // ✅ Badges add kora hoyeche
+  badge1Text?: string | null;
+  badge1Icon?: string | null;
+  badge1Color?: string | null;
+  badge2Text?: string | null;
+  badge2Icon?: string | null;
+  badge2Color?: string | null;
+  badge3Text?: string | null;
+  badge3Icon?: string | null;
+  badge3Color?: string | null;
 };
 
 export type RenderedSection = {

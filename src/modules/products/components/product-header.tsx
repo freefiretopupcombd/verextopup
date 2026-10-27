@@ -59,6 +59,7 @@ export function ProductHeader({
   categoryName,
   icon,
   thumbnail,
+  imageAlt, //
   rating,
   reviewCount,
   region = "BD",
@@ -69,6 +70,7 @@ export function ProductHeader({
   categoryName?: string | null;
   icon: string | null;
   thumbnail: string | null;
+  imageAlt?: string | null; //
   rating: number;
   reviewCount: number;
   region?: string;
@@ -96,7 +98,7 @@ export function ProductHeader({
             {thumbnail ? (
               <img
                 src={thumbnail}
-                alt={name}
+                alt={imageAlt || name}
                 className="w-full h-full object-cover"
               />
             ) : icon ? (

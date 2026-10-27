@@ -30,9 +30,11 @@ type Variant = {
   name: string;
   price: number;
   salePrice: number | null;
+  usdtPrice?: number | null;
   stock: number | null;
   unlimitedStock: boolean;
   icon: string | null;
+  sortOrder?: number;
 };
 
 type Field = {
@@ -526,8 +528,8 @@ export function ProductView({
               logo: pm.logo,
             }))}
             uddoktaPayEnabled={uddoktaPayEnabled}
-            selected={paymentChoice}
-            onSelect={setPaymentChoice}
+            selected={paymentChoice as any}
+            onSelect={setPaymentChoice as any}
             selectedMethodId={selectedMethodId}
             onMethodSelect={setSelectedMethodId}
           />
